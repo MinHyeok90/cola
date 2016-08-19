@@ -7,16 +7,25 @@ import android.widget.Button;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-    Button btn;
+    Button btn1;
+    Button btn2;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btn = (Button)findViewById(R.id.hi);
+        btn1 = (Button)findViewById(R.id.hi);
+        btn2 = (Button)findViewById(R.id.bye);
     }
     void onClick(View v){
-        Toast.makeText(this,"hi",Toast.LENGTH_SHORT).show();//메시지 처리하기
 
+        switch (v.getId()) {
+            case R.id.hi:
+                Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
+                break;
+            case R.id.bye:
+                Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 
 }
