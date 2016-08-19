@@ -22,4 +22,13 @@
         android:textColor="@android:color/white"
         android:text="hi everybody"
         android:onClick="onClick"/>
+    <Button
+        android:id = "@+id/bye"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="40dp"
+        android:background="@android:color/holo_blue_bright"
+        android:textColor="@android:color/white"
+        android:text="bye everybody"
+        android:onClick="onClick"/>
 </RelativeLayout>
