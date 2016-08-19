@@ -15,7 +15,7 @@ public class MainActivity extends AppCompatActivity {
         btn = (Button)findViewById(R.id.hi);
     }
     void onClick(View v){
-        Toast.makeText(this,"hi",Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,"hi",Toast.LENGTH_SHORT).show();//메시지 처리하기
 
     }
 
