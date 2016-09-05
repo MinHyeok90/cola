@@ -1,5 +1,6 @@
 package com.example.android.cola;
 
+import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -59,6 +60,8 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
                 emotion = "goodbye";
                 myRef.setValue(emotion);
+                Intent logintent = new Intent(this,Login.class);
+                startActivity(logintent);
                 break;
         }
     }
