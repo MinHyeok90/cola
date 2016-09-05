@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "247541252483",
+    "firebase_url": "https://cola-b6336.firebaseio.com",
+    "project_id": "cola-b6336",
+    "storage_bucket": "cola-b6336.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:247541252483:android:20bfc309ccef106e",
+        "android_client_info": {
+          "package_name": "com.example.android.cola"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "247541252483-tlus70uj775bp8m070rl5phdpf47bven.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMGFDjc00FLXLG1bpYy4iXD5JekEDnMYg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
