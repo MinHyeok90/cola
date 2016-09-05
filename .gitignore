@@ -48,10 +48,10 @@ captures/
 *.iml
 .idea/workspace.xml
 .idea/libraries
-.idea/misc.xml
 .idea/gradle.xml
 .idea/modules.xml
 .idea/vcs.xml
+.idea/misc.xml
 
 # Keystore files
 *.jks
