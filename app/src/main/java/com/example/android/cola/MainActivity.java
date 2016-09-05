@@ -53,8 +53,13 @@ public class MainActivity extends AppCompatActivity {
         switch (v.getId()) {
             case R.id.hi:
                 Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
+
                 emotion = "hello";
                 myRef.setValue(emotion);
+
+                //Album 액티비티 test용 Intent
+                Intent intent = new Intent(this,Albums.class);
+                startActivity(intent);
                 break;
             case R.id.bye:
                 Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
