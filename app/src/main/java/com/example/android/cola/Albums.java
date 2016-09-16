@@ -33,6 +33,13 @@ public class Albums extends AppCompatActivity {
             }
         });
     }
+
+    public void newAlbum(View v){
+        //새로운 액티비티 생성
+
+        Intent intent = new Intent(this,NewAlbum.class);
+        startActivity(intent);
+    }
 }
 
 class ImageAdapter extends BaseAdapter {
