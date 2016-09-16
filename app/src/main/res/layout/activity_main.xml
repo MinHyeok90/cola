@@ -17,7 +17,7 @@
         android:padding="40dp"
         android:background="@android:color/holo_red_light"
         android:textColor="@android:color/white"
-        android:text="hi everybody"
+        android:text="Album"
         android:onClick="onClick"/>
     <Button
         android:id = "@+id/bye"
@@ -27,6 +27,6 @@
         android:layout_marginTop="8dp"
         android:background="@android:color/holo_blue_bright"
         android:textColor="@android:color/white"
-        android:text="bye everybody"
+        android:text="Login"
         android:onClick="onClick"/>
 </LinearLayout>

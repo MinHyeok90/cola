@@ -16,9 +16,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".Albums"></activity>
-        <activity android:name=".Login">
-
-        </activity>
+        <activity android:name=".Login"></activity>
     </application>
+    <uses-permission android:name="android.permission.INTERNET" />
 
 </manifest>
