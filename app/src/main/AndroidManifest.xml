@@ -20,11 +20,9 @@
         <activity android:name=".Login"></activity>
         <activity android:name=".NewAlbum"></activity>
     </application>
-<<<<<<< HEAD
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-=======
     <uses-permission android:name="android.permission.INTERNET" />
->>>>>>> d8c9b55b25d086bd2565768bed35d755e7268a07
+
 
 </manifest>
