@@ -1,5 +1,6 @@
 package com.example.android.cola;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
@@ -37,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 String value = dataSnapshot.getValue(String.class);//return 값이 뭐든지 가능
-
             }
 
             @Override
@@ -52,20 +52,21 @@ public class MainActivity extends AppCompatActivity {
 
         switch (v.getId()) {
             case R.id.hi:
-                Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "hi", Toast.LENGTH_SHORT).show();
 
                 emotion = "hello";
                 myRef.setValue(emotion);
 
                 //Album 액티비티 test용 Intent
-                Intent intent = new Intent(this,Albums.class);
+                Intent intent = new Intent(MainActivity.this,Albums.class);
                 startActivity(intent);
                 break;
             case R.id.bye:
                 Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
                 emotion = "goodbye";
                 myRef.setValue(emotion);
-                Intent logintent = new Intent(this,Login.class);
+
+                Intent logintent = new Intent(MainActivity.this,Login.class);
                 startActivity(logintent);
                 break;
             case R.id.goodnight:
