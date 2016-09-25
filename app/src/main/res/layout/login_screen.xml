@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <LinearLayout
+        android:padding="20dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal">
+        <EditText
+            android:id="@+id/editText"
+            android:hint="E-mail"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
 
-    <TextView
-        android:id = "@+id/idinput"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="ID : "
-        android:layout_toStartOf="@+id/editText2" />
-    <EditText
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_alignParentTop="true"
-        android:layout_toEndOf="@+id/idinput" />
+        <EditText
+            android:id="@+id/editText2"
+            android:hint="Password"
+            android:padding="16dp"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+        <Button
+            android:text="Login"
+            android:padding="16dp"
+            android:id="@+id/loginid"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
 
-    <TextView
-        android:id = "@+id/idoutput"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Password : "
-        android:layout_below="@+id/editText"
-        android:layout_alignParentStart="true" />
-    <EditText
-        android:layout_width="100dp"
-        android:layout_height="wrap_content"
-        android:layout_alignTop="@+id/idoutput"
-        android:layout_toEndOf="@+id/idoutput"
-        android:id="@+id/editText2" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text = "확인"
-        android:layout_alignTop="@+id/sign"
-        android:layout_toEndOf="@+id/sign"
-        android:id="@+id/complict" />
+    </LinearLayout>
 
-    <Button
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:padding="20dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text = "회원가입"
-        android:layout_below="@+id/editText2"
-        android:layout_alignParentStart="true"
-        android:id="@+id/sign" />
-    <com.google.android.gms.common.SignInButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/sign_in_gmail"
-        android:layout_below="@+id/complict"
-        android:layout_alignParentStart="true" />
+        android:layout_gravity="center_horizontal">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text = "Sign out"
-        android:id="@+id/sign_out_gmail"
-        android:layout_below="@+id/sign"
-        android:layout_alignParentStart="true"
-        android:layout_marginTop="42dp" />
+        <com.google.android.gms.common.SignInButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/sign_in_gmail"
+            android:layout_below="@+id/complict"
+            android:layout_alignParentStart="true" />
+        <Button
+            android:text="Sign out"
+            android:padding="16dp"
+            android:id="@+id/sign_out_gmail"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+        <Button
+            android:text="SignUp"
+            android:padding="16dp"
+            android:id="@+id/signUpid"
+            android:layout_width="match_parent"
+            android:layout_height="50dp" />
+
+    </LinearLayout>
+
+<!--로그입니다.-->
     <TextView
         android:id = "@+id/status"
         android:layout_width="wrap_content"
@@ -74,4 +74,4 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true" />
 
-</RelativeLayout>
+</LinearLayout>
