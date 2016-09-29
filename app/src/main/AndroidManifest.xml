@@ -17,6 +17,7 @@
         </activity>
         <activity android:name=".Albums"></activity>
         <activity android:name=".Login"></activity>
+        <activity android:name=".SignUpActivity"></activity>
     </application>
     <uses-permission android:name="android.permission.INTERNET" />
 

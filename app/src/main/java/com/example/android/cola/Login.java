@@ -47,6 +47,9 @@ import java.util.concurrent.TimeUnit;
 public class Login extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = "Login";
     private static final int RC_SIGN_IN = 9001;
+
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = database.getReference("users");
     // [START declare_auth]
     // [START initialize_auth]
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
@@ -106,6 +109,11 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
+                    //String key =  myRef.child("users").push().getKey();
+                    User myUser = new User(user.getUid(),user.getEmail());
+                    String key = myUser.getUid();
+                    //myRef.push().setValue(myUser.getUid());
+                    myRef.child(myUser.getUid()).child("email").setValue(myUser.getEmail());
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
                     // User is signed out
@@ -122,7 +130,6 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
     }
     void init(){
         btnsignup = (Button)findViewById(R.id.signUpid);
-        btncom = (Button)findViewById(R.id.complict);
         btningmail = (SignInButton) findViewById(R.id.sign_in_gmail);
         btnoutgmail = (Button)findViewById(R.id.sign_out_gmail);
         myid = (EditText)findViewById(R.id.editText);
@@ -130,10 +137,9 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
         mStatusTextView = (TextView)findViewById(R.id.status);
         mDetailTextView = (TextView)findViewById(R.id.detail);
 
-        btnsignup.setOnClickListener(Login.this);
-        btncom.setOnClickListener(Login.this);
-        btningmail.setOnClickListener(Login.this);
-        btnoutgmail.setOnClickListener(Login.this);
+        btnsignup.setOnClickListener(this);
+        btningmail.setOnClickListener(this);
+        btnoutgmail.setOnClickListener(this);
     }
 
     // [START on_start_add_listener]
@@ -305,9 +311,6 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 Intent intent = new Intent(Login.this,SignUpActivity.class);
                 startActivity(intent);
                 break;
-            case R.id.complict:
-                break;
-
             case R.id.sign_in_gmail:
                     signIn();
                 break;

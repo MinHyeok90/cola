@@ -36,4 +36,16 @@
             android:layout_height="50dp" />
 
     </LinearLayout>
+
+    <TextView
+        android:text="tvStatus"
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <TextView
+        android:text="tvDetail"
+        android:id="@+id/tvDetail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>
