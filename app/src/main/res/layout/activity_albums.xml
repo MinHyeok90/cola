@@ -6,13 +6,6 @@
     android:orientation="vertical"
     tools:context="com.example.android.cola.Albums">
 
-    <Button
-        android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:text="새로운 앨범 추가하기"
-        android:onClick="newAlbum"
-        />
-
     <GridView
         android:id="@+id/gridview"
         android:layout_width="match_parent"

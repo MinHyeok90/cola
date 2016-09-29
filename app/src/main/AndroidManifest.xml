@@ -18,11 +18,8 @@
         <activity android:name=".GalleryActivity"></activity>
         <activity android:name=".Albums"></activity>
         <activity android:name=".Login"></activity>
-        <activity android:name=".NewAlbum"></activity>
     </application>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.INTERNET" />
-
-
 </manifest>
