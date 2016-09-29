@@ -22,7 +22,7 @@ public class Albums extends AppCompatActivity {
 
         Intent it= getIntent();
         GridView grid = (GridView)findViewById(R.id.gridview);
-        ImageAdapter Adapter = new ImageAdapter(this);
+        ImageAdapter_main Adapter = new ImageAdapter_main(this);
         grid.setAdapter(Adapter);
 
         grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -33,9 +33,10 @@ public class Albums extends AppCompatActivity {
             }
         });
     }
+
 }
 
-class ImageAdapter extends BaseAdapter {
+class ImageAdapter_main extends BaseAdapter {
     private Context mContext;
 
     int[] picture = {
@@ -46,7 +47,7 @@ class ImageAdapter extends BaseAdapter {
             R.drawable.ic_action_name
     };
 
-    public ImageAdapter(Context c){
+    public ImageAdapter_main(Context c){
         mContext = c;
     }
 

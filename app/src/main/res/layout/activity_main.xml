@@ -29,4 +29,14 @@
         android:textColor="@android:color/white"
         android:text="Login"
         android:onClick="onClick"/>
+    <Button
+        android:id = "@+id/goodnight"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="40dp"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/holo_green_light"
+        android:textColor="@android:color/white"
+        android:text="Good Night"
+        android:onClick="onClick"/>
 </LinearLayout>

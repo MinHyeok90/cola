@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
                 // This method is called once with the initial value and again
                 // whenever data at this location is updated.
                 String value = dataSnapshot.getValue(String.class);//return 값이 뭐든지 가능
-
             }
 
             @Override
@@ -69,6 +68,11 @@ public class MainActivity extends AppCompatActivity {
 
                 Intent logintent = new Intent(MainActivity.this,Login.class);
                 startActivity(logintent);
+                break;
+            case R.id.goodnight:
+                //Album 액티비티 test용 Intent
+                Intent galleryIntent = new Intent(this,GalleryActivity.class);
+                startActivity(galleryIntent);
                 break;
         }
     }
