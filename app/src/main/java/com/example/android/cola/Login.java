@@ -47,14 +47,19 @@ import java.util.concurrent.TimeUnit;
 public class Login extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = "Login";
     private static final int RC_SIGN_IN = 9001;
+
+    private FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private DatabaseReference myRef = database.getReference("users");
     // [START declare_auth]
-    private FirebaseAuth mAuth;
+    // [START initialize_auth]
+    private FirebaseAuth mAuth = FirebaseAuth.getInstance();
+    // [END initialize_auth]
     // [END declare_auth]
 
     // [START declare_auth_listener]
     private FirebaseAuth.AuthStateListener mAuthListener;
     // [END declare_auth_listener]
-    Button btnsign;
+    Button btnsignup;
     Button btncom;
     SignInButton btningmail;
     Button btnoutgmail;
@@ -72,6 +77,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
 
     public Login() {
     }
+
     public Login(Context context){
         mcontext = context;
     }
@@ -91,9 +97,10 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
         // [END config_signin]
 
         mGoogleApiClient = new GoogleApiClient.Builder(Login.this)
-                .enableAutoManage(Login.this /* FragmentActivity */, Login.this /* OnConnectionFailedListener */)
+                .enableAutoManage(Login.this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
+
 
         // [START auth_state_listener]
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -102,6 +109,11 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
+                    //String key =  myRef.child("users").push().getKey();
+                    User myUser = new User(user.getUid(),user.getEmail());
+                    String key = myUser.getUid();
+                    //myRef.push().setValue(myUser.getUid());
+                    myRef.child(myUser.getUid()).child("email").setValue(myUser.getEmail());
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
                     // User is signed out
@@ -114,14 +126,10 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
             }
         };
 
-        // [START initialize_auth]
-        mAuth = FirebaseAuth.getInstance();
-        // [END initialize_auth]
         init();
     }
     void init(){
-        btnsign = (Button)findViewById(R.id.sign);
-        btncom = (Button)findViewById(R.id.complict);
+        btnsignup = (Button)findViewById(R.id.signUpid);
         btningmail = (SignInButton) findViewById(R.id.sign_in_gmail);
         btnoutgmail = (Button)findViewById(R.id.sign_out_gmail);
         myid = (EditText)findViewById(R.id.editText);
@@ -129,16 +137,15 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
         mStatusTextView = (TextView)findViewById(R.id.status);
         mDetailTextView = (TextView)findViewById(R.id.detail);
 
-        btnsign.setOnClickListener(Login.this);
-        btncom.setOnClickListener(Login.this);
-        btningmail.setOnClickListener(Login.this);
-        btnoutgmail.setOnClickListener(Login.this);
+        btnsignup.setOnClickListener(this);
+        btningmail.setOnClickListener(this);
+        btnoutgmail.setOnClickListener(this);
     }
 
     // [START on_start_add_listener]
     @Override
     public void onStart() {
-
+        // [START auth_state_listener]
         mAuth.addAuthStateListener(Login.this.mAuthListener);
         // [END auth_state_listener]
         super.onStart();
@@ -154,22 +161,24 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
         }
     }
     // [END on_stop_remove_listener]
+
     private void updateUI(FirebaseUser user) {
         hideProgressDialog();
         if (user != null) {
-            mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
-            mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
+            //mStatusTextView.setText(getString(R.string.google_status_fmt, user.getEmail()));
+            //mDetailTextView.setText(getString(R.string.firebase_status_fmt, user.getUid()));
 
             findViewById(R.id.sign_in_gmail).setVisibility(View.GONE);
             findViewById(R.id.sign_out_gmail).setVisibility(View.VISIBLE);
         } else {
-            mStatusTextView.setText(R.string.signed_out);
-            mDetailTextView.setText(null);
+            //mStatusTextView.setText(R.string.signed_out);
+            //mDetailTextView.setText(null);
 
             findViewById(R.id.sign_in_gmail).setVisibility(View.VISIBLE);
             findViewById(R.id.sign_out_gmail).setVisibility(View.GONE);
         }
     }
+
     // [START onactivityresult]
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -178,13 +187,14 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
         // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
+            //handleSignInResult(result);
             if (result.isSuccess()) {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = result.getSignInAccount();
-                mStatusTextView.setText("로그인에 성공했습니다.");
+                mStatusTextView.setText("onActivityResult 로그인에 성공했습니다.");
                 firebaseAuthWithGoogle(account);
             } else {
-                mStatusTextView.setText("로그인에 실패했습니다.");
+                mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
                 // Google Sign In failed, update UI appropriately
                 updateUI(null);
             }
@@ -275,15 +285,15 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
     }
 
 
-    private void handleSignInResult(GoogleSignInResult result){
-        Log.d(TAG,"handleSignInResult : "+result.isSuccess());
-        if(result.isSuccess()){
-            GoogleSignInAccount acct = result.getSignInAccount();
-            mStatusTextView.setText("Hello, "+acct.getDisplayName());
-        }else{
-            mStatusTextView.setText("로그인에 실패했습니다.");
-        }
-    }
+//    private void handleSignInResult(GoogleSignInResult result){
+//        Log.d(TAG,"handleSignInResult : "+result.isSuccess());
+//        if(result.isSuccess()){
+//            GoogleSignInAccount acct = result.getSignInAccount();
+//            mStatusTextView.setText("Hello, "+acct.getDisplayName());
+//        }else{
+//            mStatusTextView.setText("handleSignInResult 로그인에 실패했습니다.");
+//        }
+//    }
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -297,11 +307,10 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
     @Override
     public void onClick(View view) {
         switch (view.getId()){
-            case R.id.sign:
+            case R.id.signUpid:
+                Intent intent = new Intent(Login.this,SignUpActivity.class);
+                startActivity(intent);
                 break;
-            case R.id.complict:
-                break;
-
             case R.id.sign_in_gmail:
                     signIn();
                 break;

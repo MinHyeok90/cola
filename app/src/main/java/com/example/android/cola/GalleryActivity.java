@@ -29,6 +29,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -48,7 +49,10 @@ import com.google.firebase.storage.UploadTask;
 
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -84,6 +88,7 @@ public class GalleryActivity extends AppCompatActivity {
     public Activity activity = this;
 
     public final long start = new Date((2016-1900),8,20,0,0,0).getTime();
+    private final List filenameList = new ArrayList();
     //public final long start = ;
 
     @Override
@@ -97,25 +102,32 @@ public class GalleryActivity extends AppCompatActivity {
         Date dates = new Date(s);
 
         DatabaseReference mReference =  myRef.child(albumName).child("filelist");
-        final StorageReference albumReference = storageRef.child(albumName);
+        //final StorageReference albumReference = storageRef.child(albumName);
 
         //Query query = mReference.orderByChild("filename");
         final List albumList = new ArrayList();
 
         mGridView = (GridView)findViewById(R.id.gridView);
+        gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList);
+        mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
 
         mReference.addValueEventListener(
             new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     albumList.clear();
+                    filenameList.clear();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         //String idx = child.getKey().toString();
-                        String fileName = child.child("filename").getValue().toString();
-                        albumList.add(fileName);
+                        if(child != null) {
+                            Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
+                            String fileUri = child.child("url").getValue().toString();
+                            String fileName = child.child("filename").getValue().toString();
+                            albumList.add(fileUri);
+                            filenameList.add(fileName);
+                        }
                     }
-                    gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList, albumReference);
-                    mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
+                    gridAdapter.notifyDataSetChanged();
 
                 }
 
@@ -130,16 +142,7 @@ public class GalleryActivity extends AppCompatActivity {
     void onClick(View v){
 
         switch (v.getId()) {
-            /*case R.id.downloadButton:
-                Intent intent = new Intent();
-                // Show only images, no videos or anything else
-                intent.setType("image/*");
-                intent.setAction(Intent.ACTION_GET_CONTENT);
-                // Always show the chooser (if there are multiple options available)
-                startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE_REQUEST);
-               // Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
-                break;
-            */
+
             case R.id.loadButton:
                 //최근 파일 불러오기
                 String[] projection = new String[]{
@@ -156,46 +159,61 @@ public class GalleryActivity extends AppCompatActivity {
                                 null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");; //returns cursor with 3 columns mentioned above
 
                 String albumName = "1";
-
                 final DatabaseReference mReference =  myRef.child(albumName).child("filelist");
                 final StorageReference albumReference = storageRef.child(albumName);
                 boolean a = cursor.isAfterLast();
                 while(cursor.moveToNext()){
                     String filePath = cursor.getString(1);
                     final String filename = filePath.split("/")[filePath.split("/").length-1];
-                    String dateTaken = cursor.getString(3);
-                    long dTaken = Long.parseLong(dateTaken);
-                    Date date = new Date(dTaken);
+                    if(!filenameList.contains(filename)) {
+                        BitmapFactory.Options options = new BitmapFactory.Options();
+                        options.inSampleSize = 4;
+                        Bitmap src = BitmapFactory.decodeFile( filePath, options );
+                        Bitmap resized = Bitmap.createScaledBitmap( src, 256, 256, true );
 
-                    //System.out.print("");
-                    Uri file = Uri.fromFile(new File(filePath));
-                    StorageReference fileReference = albumReference.child(filename);
+                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                        resized.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+                        byte[] bitmapData = bos.toByteArray();
+                        InputStream bs = new ByteArrayInputStream(bitmapData);
 
-                    UploadTask uploadTask = fileReference.putFile(file);
+                        String dateTaken = cursor.getString(3);
+                        long dTaken = Long.parseLong(dateTaken);
+                        Date date = new Date(dTaken);
 
-                    // Register observers to listen for when the download is done or if it fails
-                    uploadTask.addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception exception) {
-                            // Handle unsuccessful uploads
-                        }
-                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                        //System.out.print("");
 
-                            mReference.push().child("filename").setValue(filename);
-                        }
-                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                        @Override
-                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                            TextView progressView = (TextView) findViewById(R.id.progress);
-                            double progress = 100.0 * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                            System.out.println("Upload is " + progress + "% done");
-                            progressView.setText("uploading: "+progress+"%");
-                        }
-                    });
+//                        Uri file = Uri.fromFile(new File(filePath));
+                        StorageReference fileReference = albumReference.child(filename);
+
+                        UploadTask uploadTask = fileReference.putStream(bs);
+
+                        // Register observers to listen for when the download is done or if it fails
+                        uploadTask.addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception exception) {
+                                // Handle unsuccessful uploads
+                            }
+                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                DatabaseReference r = mReference.push();
+                                String filename = taskSnapshot.getMetadata().getName();
+                                r.child("url").setValue(downloadUrl.toString());
+                                r.child("filename").setValue(filename);
+
+                            }
+                        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                            @Override
+                            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                                TextView progressView = (TextView) findViewById(R.id.progress);
+                                double progress = 100.0 * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
+                                System.out.println("Upload is " + progress + "% done");
+                                progressView.setText("uploading: " + progress + "%");
+                            }
+                        });
+                    }
                 }
                 break;
         }
@@ -206,14 +224,14 @@ public class GalleryActivity extends AppCompatActivity {
         int layout;
         LayoutInflater layoutInflater;
         List arrayList;
-        StorageReference storageReference;
+        //StorageReference storageReference;
 
-        public GridAdapter(Context context, int layout, List arrayList, StorageReference storageReference){
+        public GridAdapter(Context context, int layout, List arrayList){
             this.context = context;
             this.layout = layout;
             this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             this.arrayList = arrayList;
-            this.storageReference = storageReference;
+            //this.storageReference = storageReference;
 
         }
         @Override
@@ -238,43 +256,18 @@ public class GalleryActivity extends AppCompatActivity {
             // Put it in the image view
 
             final ImageView imageView = (ImageView) view.findViewById(R.id.galleryImageView);
-            final StorageReference imagesReference = storageReference.child(getItem(i).toString());
             final long MAX_BYTE = 1024;
-            /*imagesReference.getDownloadUrl()*/
-            imagesReference.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                @Override
-                public void onSuccess(Uri uri) {
-                    // Data for "images/island.jpg" is returns, use this as needed
-                    final String mUrl = uri.toString();
-                    final Bitmap bitmap;
-                    ImageLoadTask imgLoadTask = new ImageLoadTask(mUrl,imageView);
-                    imgLoadTask.execute();
 
-
-                    /*new Thread() {
-                        public void run() {
-
-                        }
-                    }.start();*/
-
-                }
-            }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception exception) {
-                    // Handle any errors
-                    Log.d(TAG,"error", exception);
-                }
-            });
-
-
-            /*if (view==null)
-                view = layoutInflater.inflate(layout, null);
-            ImageView imageView = (ImageView)view.findViewById(R.id.galleryImageView);
-            imageView.setImageResource(img[i]);*/
+            Glide.with(getApplicationContext())
+                    .load(getItem(i))
+                    .centerCrop()
+                    .override(256,256)
+                    .error(R.drawable.ic_action_name)
+                    .into(imageView);
 
             return view;
         }
-    }
+    }/*
     public class ImageLoadTask extends AsyncTask<Void, Void, Bitmap> {
 
         private String url;
@@ -313,6 +306,6 @@ public class GalleryActivity extends AppCompatActivity {
         }
 
     }
-
+*/
 
 }
