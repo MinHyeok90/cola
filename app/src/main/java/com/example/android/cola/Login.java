@@ -43,6 +43,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by Krivnon on 2016-09-05.
+ *
+ * Modify by 김민혁 on 2016-10-24
+ *  메소드 수정 : onActivityResult
+ *   로그인 성공하면 album 액티비티로 이동.
+ *
  */
 public class Login extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = "Login";
@@ -194,8 +199,13 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 mStatusTextView.setText("onActivityResult 로그인에 성공했습니다.");
                 firebaseAuthWithGoogle(account);
 
-                Intent listintent = new Intent(Login.this,FriendListActivity.class);
-                startActivity(listintent);
+                //로그인 성공시, 앨범집으로 이동합니다.
+                Intent intent = new Intent(this,Albums.class);
+                startActivity(intent);
+
+//                Intent listintent = new Intent(Login.this,FriendListActivity.class);
+//                startActivity(listintent);
+
             } else {
                 mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
                 // Google Sign In failed, update UI appropriately
