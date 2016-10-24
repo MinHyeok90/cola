@@ -73,8 +73,6 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
     EditText mypasswd;
     Context mcontext;
 
-    String sid;
-    String spasswd;
 
     GoogleApiClient mGoogleApiClient;
     private TextView mStatusTextView;
@@ -204,13 +202,11 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 mStatusTextView.setText("onActivityResult 로그인에 성공했습니다.");
                 firebaseAuthWithGoogle(account);
 
+                //Intent listintent = new Intent(this,FriendListActivity.class);
+                //startActivity(listintent);
                 ////로그인 성공시, 앨범집으로 이동합니다.
-                //Intent intent = new Intent(this,Albums.class);
-                //startActivity(intent);
-
-                Intent listintent = new Intent(this,FriendListActivity.class);
-                startActivity(listintent);
-
+                Intent intent = new Intent(this,Albums.class);
+                startActivity(intent);
             } else {
                 mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
                 // Google Sign In failed, update UI appropriately
@@ -323,6 +319,11 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                             Log.w(TAG, "signInWithEmail:failed", task.getException());
                             Toast.makeText(Login.this, R.string.auth_failed,
                                     Toast.LENGTH_SHORT).show();
+                        }else{
+                            ////로그인 성공시, 앨범집으로 이동합니다.
+                            Intent intent = new Intent(Login.this,Albums.class);
+                            startActivity(intent);
+
                         }
 
                         // [START_EXCLUDE]
