@@ -12,6 +12,7 @@
         <EditText
             android:id="@+id/su_uid"
             android:hint="E-mail"
+            android:inputType="textEmailAddress"
             android:padding="16dp"
             android:layout_width="match_parent"
             android:layout_height="50dp" />
@@ -19,12 +20,14 @@
         <EditText
             android:id="@+id/su_upw"
             android:hint="Password"
+            android:inputType="textPassword"
             android:padding="16dp"
             android:layout_width="match_parent"
             android:layout_height="50dp" />
         <EditText
             android:id="@+id/su_cupw"
             android:hint="Confirm Password"
+            android:inputType="textPassword"
             android:padding="16dp"
             android:layout_width="match_parent"
             android:layout_height="50dp" />

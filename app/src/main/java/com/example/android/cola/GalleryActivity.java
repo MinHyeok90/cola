@@ -6,67 +6,42 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.CursorAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
-import org.w3c.dom.Text;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-
 
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 
 public class GalleryActivity extends AppCompatActivity {
@@ -77,40 +52,71 @@ public class GalleryActivity extends AppCompatActivity {
     StorageReference storageRef =storage.getReferenceFromUrl("gs://cola-b6336.appspot.com");
     StorageReference imagesRef;
 
-    //FirebaseStorage storage = FirebaseStorage.getInstance();
-    //StorageReference storageRef = storage.getReferenceFromUrl("gs://<your-bucket-name>");
-    private int PICK_IMAGE_REQUEST = 1;
-    public final static int PICK_PHOTO_CODE = 1046;
     public final String TAG = "GalleryActivity";
     public String basePath = null;
     public GridView mGridView;
     public GridAdapter gridAdapter;
     public Activity activity = this;
 
-    public final long start = new Date((2016-1900),8,20,0,0,0).getTime();
+    public final long start = new Date((2016-1900),9,20,0,0,0).getTime();
     private final List filenameList = new ArrayList();
-    //public final long start = ;
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
-        String albumName = "1";
+        final String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
+        final String albumName = "albumname" ;//인텐트에서 앨범 이름 받아오기
+        final String startDate = "1476889200000"; //이것도 인텐트에서 날짜 받아오는게..
 
-        long s = start;
-        Date dates = new Date(s);
+        DatabaseReference mReference =  myRef.child(albumKey).child("filelist");
 
-        DatabaseReference mReference =  myRef.child(albumName).child("filelist");
-        //final StorageReference albumReference = storageRef.child(albumName);
+        // ActionBar에 타이틀 변경
+        getSupportActionBar().setTitle(albumName);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        //Query query = mReference.orderByChild("filename");
+        long s = Long.parseLong(startDate);
+        //Date dates = new Date(s);
+
         final List albumList = new ArrayList();
 
         mGridView = (GridView)findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList);
         mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(activity, DetailActivity.class);
 
+                intent.putExtra("url", albumList.get(position).toString());
+                startActivity(intent);
+            }
+        });
+        /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/
+        /*
+        * filelist 변경될 때마다 호출됨
+        */
         mReference.addValueEventListener(
             new ValueEventListener() {
                 @Override
@@ -118,9 +124,12 @@ public class GalleryActivity extends AppCompatActivity {
                     albumList.clear();
                     filenameList.clear();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        //String idx = child.getKey().toString();
                         if(child != null) {
-                            Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
+                            //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
+                            /*
+                            * db에서 받아온 url, filename 등을 어댑터에 bind된 arrayList에 넣고
+                            * 어댑터에 notifyDataSetChanged 해줌
+                            */
                             String fileUri = child.child("url").getValue().toString();
                             String fileName = child.child("filename").getValue().toString();
                             albumList.add(fileUri);
@@ -138,13 +147,21 @@ public class GalleryActivity extends AppCompatActivity {
                 }
             });
     }
-
+    @Override
+    public boolean onSupportNavigateUp()
+    {
+        return super.onSupportNavigateUp();
+    }
     void onClick(View v){
 
         switch (v.getId()) {
 
             case R.id.loadButton:
-                //최근 파일 불러오기
+                String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
+                final DatabaseReference mReference =  myRef.child(albumKey).child("filelist");
+                final StorageReference albumReference = storageRef.child(albumKey);
+
+                //최근 파일 불러오기, projection: select할 필드 선택
                 String[] projection = new String[]{
                         MediaStore.Images.ImageColumns._ID,
                         MediaStore.Images.ImageColumns.DATA,
@@ -153,14 +170,13 @@ public class GalleryActivity extends AppCompatActivity {
                         MediaStore.Images.ImageColumns.MIME_TYPE
                 };
                 String where = MediaStore.Images.Media.DATE_TAKEN +" >= " + start;
-                //String where = null;
+
+                //문제 있음. 외장메모리 없는 경우 External_content_url 작동 안함
+                //Internal_conent_uri로 실행 시 잘 안 되는 것 같음
                 Cursor cursor = getContentResolver()
                         .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, where,
                                 null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");; //returns cursor with 3 columns mentioned above
 
-                String albumName = "1";
-                final DatabaseReference mReference =  myRef.child(albumName).child("filelist");
-                final StorageReference albumReference = storageRef.child(albumName);
                 boolean a = cursor.isAfterLast();
                 while(cursor.moveToNext()){
                     String filePath = cursor.getString(1);
@@ -179,10 +195,6 @@ public class GalleryActivity extends AppCompatActivity {
                         String dateTaken = cursor.getString(3);
                         long dTaken = Long.parseLong(dateTaken);
                         Date date = new Date(dTaken);
-
-                        //System.out.print("");
-
-//                        Uri file = Uri.fromFile(new File(filePath));
                         StorageReference fileReference = albumReference.child(filename);
 
                         UploadTask uploadTask = fileReference.putStream(bs);
@@ -219,21 +231,22 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
-    public class GridAdapter extends BaseAdapter{
+    public class GridAdapter extends BaseAdapter {
         Context context;
         int layout;
         LayoutInflater layoutInflater;
         List arrayList;
         //StorageReference storageReference;
 
-        public GridAdapter(Context context, int layout, List arrayList){
+        public GridAdapter(Context context, int layout, List arrayList) {
             this.context = context;
             this.layout = layout;
-            this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             this.arrayList = arrayList;
             //this.storageReference = storageReference;
 
         }
+
         @Override
         public int getCount() {
             return arrayList.size();
@@ -251,7 +264,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            if (view==null)
+            if (view == null)
                 view = layoutInflater.inflate(layout, null);
             // Put it in the image view
 
@@ -261,51 +274,11 @@ public class GalleryActivity extends AppCompatActivity {
             Glide.with(getApplicationContext())
                     .load(getItem(i))
                     .centerCrop()
-                    .override(256,256)
+                    .override(256, 256)
                     .error(R.drawable.ic_action_name)
                     .into(imageView);
 
             return view;
         }
-    }/*
-    public class ImageLoadTask extends AsyncTask<Void, Void, Bitmap> {
-
-        private String url;
-        private ImageView imageView;
-
-        public ImageLoadTask(String url, ImageView imageView) {
-            this.url = url;
-            this.imageView = imageView;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            try {
-                URL urlConnection = new URL(url);
-                HttpURLConnection connection = (HttpURLConnection) urlConnection
-                        .openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-
-
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(myBitmap, 240,120);
-                return thumbnail;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            super.onPostExecute(result);
-            imageView.setImageBitmap(result);
-
-        }
-
     }
-*/
-
 }

@@ -5,7 +5,11 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -29,7 +33,7 @@ import java.util.Map;
 /**
  * Created by Krivnon on 2016-09-25.
  */
-public class SignUpActivity extends AppCompatActivity implements View.OnClickListener {
+public class SignUpActivity extends AppCompatActivity implements TextView.OnEditorActionListener,View.OnClickListener {
     EditText SignId;
     EditText SignPw;
     EditText SignCpw;
@@ -59,6 +63,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     }
     void init()
     {
+        //키보드 위로 edittext올리기
+        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+
         SignId = (EditText)findViewById(R.id.su_uid);
         SignPw = (EditText)findViewById(R.id.su_upw);
         SignCpw =  (EditText)findViewById(R.id.su_cupw);
@@ -69,6 +76,9 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
 
         SignupBtn.setOnClickListener(SignUpActivity.this);
 
+        SignId.setOnEditorActionListener(this);
+        SignPw.setOnEditorActionListener(this);
+        SignCpw.setOnEditorActionListener(this);
 //        // Read from the database
 //        myRef.addValueEventListener(new ValueEventListener() {
 //            @Override
@@ -139,12 +149,25 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
     //버튼 클릭
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.su_sign:
-                String su_uid = SignId.getText().toString();
-                String su_upw = SignPw.getText().toString();
+        String su_uid = SignId.getText().toString();
+        String su_upw = SignPw.getText().toString();
+        String su_cupw = SignPw.getText().toString();
+        if (su_uid != null && su_upw !=null&& su_cupw !=null) {
+            if(su_upw.equals(su_cupw))
                 createAccount(su_uid, su_upw);
-                break;
+            else
+                Toast.makeText(this,"비밀번호가 일치하지 않습니다.",Toast.LENGTH_LONG).show();
+        }
+        else
+        {
+            Toast.makeText(this,"입력을 확인해주세요.",Toast.LENGTH_LONG).show();
+        }
+
+        //키보드 내리기
+        view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager) getSystemService(this.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
     }
 
@@ -252,4 +275,18 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
         }
     }
 
+    @Override
+    public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+        if(textView.getId()==R.id.su_uid && i== EditorInfo.IME_ACTION_NEXT){ // 뷰의 id를 식별, 키보드의 완료 키 입력 검출
+            View view = this.getCurrentFocus();
+        }
+        if(textView.getId()==R.id.su_upw && i== EditorInfo.IME_ACTION_NEXT){ // 뷰의 id를 식별, 키보드의 완료 키 입력 검출
+            View view = this.getCurrentFocus();
+        }
+        if(textView.getId()==R.id.su_cupw && i== EditorInfo.IME_ACTION_SEND){
+            View view = this.getCurrentFocus();
+            onClick(view);
+        }
+        return false;
+    }
 }

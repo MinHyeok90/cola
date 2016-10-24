@@ -11,6 +11,7 @@
         <EditText
             android:id="@+id/editText"
             android:hint="E-mail"
+            android:inputType="textEmailAddress"
             android:padding="16dp"
             android:layout_width="match_parent"
             android:layout_height="50dp" />
@@ -18,13 +19,14 @@
         <EditText
             android:id="@+id/editText2"
             android:hint="Password"
+            android:inputType="textPassword"
             android:padding="16dp"
             android:layout_width="match_parent"
             android:layout_height="50dp" />
         <Button
             android:text="Login"
             android:padding="16dp"
-            android:id="@+id/loginid"
+            android:id="@+id/loginbtn"
             android:layout_width="match_parent"
             android:layout_height="50dp" />
 
