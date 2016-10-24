@@ -2,6 +2,8 @@ package com.example.android.cola;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 
@@ -16,8 +18,10 @@ import android.widget.ListView;
  * 친구 추가 기능은 아직 DB 미구현
  */
 
-public class FriendListActivity extends AppCompatActivity {
+public class FriendListActivity extends AppCompatActivity implements View.OnClickListener {
+    Button btn;
     @Override
+
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friendlist);
@@ -28,5 +32,18 @@ public class FriendListActivity extends AppCompatActivity {
         FriendListAdapter adapter = new FriendListAdapter(this);
         //adapter장착
         listView.setAdapter(adapter);
+
+        init();
+    }
+    void init()
+    {
+        btn = (Button)findViewById(R.id.prf_btn);
+
+        btn.setOnClickListener(FriendListActivity.this);
+    }
+
+    @Override
+    public void onClick(View view) {
+
     }
 }
