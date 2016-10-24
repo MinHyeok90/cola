@@ -29,14 +29,14 @@
                 android:layout_height="wrap_content"
                 android:paddingBottom="2dp"
                 android:textSize="25sp"
-                android:text="4dp"/>
+                android:text="25sp"/>
 
             <TextView
                 android:id="@+id/prf_msg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textSize="20sp"
-                android:text="4dp"/>
+                android:text="20sp"/>
 
         </LinearLayout>
 
@@ -46,7 +46,13 @@
         android:layout_width="match_parent"
         android:layout_height="200dp">
     </ListView>
-
+    <EditText
+        android:id="@+id/prf_edt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:hint = "이메일"
+        />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

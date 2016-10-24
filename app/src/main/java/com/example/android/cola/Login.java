@@ -199,12 +199,12 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 mStatusTextView.setText("onActivityResult 로그인에 성공했습니다.");
                 firebaseAuthWithGoogle(account);
 
-                //로그인 성공시, 앨범집으로 이동합니다.
-                Intent intent = new Intent(this,Albums.class);
-                startActivity(intent);
+                ////로그인 성공시, 앨범집으로 이동합니다.
+                //Intent intent = new Intent(this,Albums.class);
+                //startActivity(intent);
 
-//                Intent listintent = new Intent(Login.this,FriendListActivity.class);
-//                startActivity(listintent);
+                Intent listintent = new Intent(this,FriendListActivity.class);
+                startActivity(listintent);
 
             } else {
                 mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
