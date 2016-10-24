@@ -146,8 +146,8 @@ public class SignUpActivity extends AppCompatActivity implements View.OnClickLis
                 createAccount(su_uid, su_upw);
                 break;
         }
-
     }
+
     private void signIn(String email, String password) {
         Log.d(TAG, "signIn:" + email);
         if (!validateForm()) {

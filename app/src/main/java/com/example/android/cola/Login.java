@@ -193,6 +193,9 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 GoogleSignInAccount account = result.getSignInAccount();
                 mStatusTextView.setText("onActivityResult 로그인에 성공했습니다.");
                 firebaseAuthWithGoogle(account);
+
+                Intent listintent = new Intent(Login.this,FriendListActivity.class);
+                startActivity(listintent);
             } else {
                 mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
                 // Google Sign In failed, update UI appropriately
