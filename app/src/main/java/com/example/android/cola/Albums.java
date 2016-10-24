@@ -16,6 +16,25 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+/*
+ * Created by 김민혁 on 2016-09-15
+ *  앨범집 activity.
+ *  클래스 생성 : ImageAdapter
+ *  이미지 클릭시 Toast 메시지 출력
+ *
+ * Modify by 김민혁 on 2016-09-17
+ *  새로운 앨범 생성시 newAlbum으로 intent.
+ *
+ * Modify by 김민혁 on 2016-09-25
+ *  newAlbum으로 intent 삭제
+ *  class명 충돌로 인해 이름변경 : ImageAdapter -> ImageAdapter_main
+ *  액션바에 메뉴 생성 + 코드 정리.
+ *
+ * Modify by 김민혁 on 2016-10-24
+ *  앨범 선택하면 GalleryActivity로 연결.
+ *
+ */
+
 public class Albums extends AppCompatActivity {
 
     @Override
@@ -33,6 +52,10 @@ public class Albums extends AppCompatActivity {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(Albums.this, i + "번째 그림 선택",
                         Toast.LENGTH_SHORT).show();
+
+                //앨범선택시, 해당 앨범으로 이동합니다.
+                Intent intent = new Intent(Albums.this,GalleryActivity.class);
+                startActivity(intent);
             }
         });
     }
@@ -68,6 +91,7 @@ public class Albums extends AppCompatActivity {
 class ImageAdapter_main extends BaseAdapter {
     private Context mContext;
 
+    //Test images
     int[] picture = {
             R.drawable.ab,
             R.drawable.ab,
