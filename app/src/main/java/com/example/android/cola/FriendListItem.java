@@ -11,33 +11,32 @@ package com.example.android.cola;
  */
 
 public class FriendListItem {
+    private String name;
+    private String msg;
+    private int res;
 
-    private String[] name = {
-            "김민혁","김미래","민경태"
-    };
-
-    private String[] msg = {
-            "세상은","살기","힘드렁"
-    };
-
-    private int[] res = {
-            R.drawable.imoticon1, R.drawable.imoticon1, R.drawable.imoticon1
-    };
-
-    public int getSize() {
-        return name.length;
+    public String getName() {
+        return name;
     }
 
-    public String getName(int position) {
-        return name[position];
+    public String getMsg() {
+        return msg;
     }
 
-    public String getMsg(int position) {
-        return msg[position];
+    public int getRes() {
+        return res;
+    }
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public int imgResource(int position) {
-        return res[position];
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
+
+    public void setRes(int res) {
+        this.res = res;
+    }
+
 
 }
