@@ -5,6 +5,8 @@ import android.content.Intent;
 import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -15,6 +17,16 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import com.bumptech.glide.Glide;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * Created by 김민혁 on 2016-09-15
@@ -31,11 +43,23 @@ import android.widget.Toast;
  *  액션바에 메뉴 생성 + 코드 정리.
  *
  * Modify by 김민혁 on 2016-10-24
- *  앨범 선택하면 GalleryActivity로 연결.
+ *  앨범 선택하면 GalleryActivity로 연결(DB 연동X).
+ *  DB연동을 위해 클래스 ImageAdapter_main를 inner class로 변경
+ *  DB 연동해서 album list 얻어오기.
+ *  받은 정보를 이용해, 갤러리의 첫번째 그림을 출력하도록 변경
  *
  */
 
 public class Albums extends AppCompatActivity {
+
+    /* Modify by 김민혁 on 2016-10-24 */
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference("albumtest");   //DB에서 Albumtest 명칭 변경시, 변경 필요
+
+    public GridView mGridView;
+    public GridAdapter gridAdapter;
+
+    public final String TAG = "AlbumActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,21 +67,53 @@ public class Albums extends AppCompatActivity {
         setContentView(R.layout.activity_albums);
 
         Intent it = getIntent();
-        GridView grid = (GridView) findViewById(R.id.gridview);
-        ImageAdapter_main Adapter = new ImageAdapter_main(this);
-        grid.setAdapter(Adapter);
+        final List albumList = new ArrayList();
+        final List thumbnailUrls = new ArrayList();
 
-        grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mGridView = (GridView)findViewById(R.id.gridview);
+        gridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls);
+        mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
+
+        //앨범 클릭시 동작
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Toast.makeText(Albums.this, i + "번째 그림 선택",
                         Toast.LENGTH_SHORT).show();
 
-                //앨범선택시, 해당 앨범으로 이동합니다.
-                Intent intent = new Intent(Albums.this,GalleryActivity.class);
+                //GalleryActivity로 연결(DB 연동X)
+                Intent intent = new Intent(Albums.this, GalleryActivity.class);
                 startActivity(intent);
             }
         });
+
+        //앨범 list 가져오기
+        myRef.addValueEventListener(
+            new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    albumList.clear();
+                    thumbnailUrls.clear();
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        //String idx = child.getKey().toString();
+                        if(child != null) {
+//                            Log.d(TAG, "album_addValueEventListener : "+child.toString());
+                            String albumName = child.child("name").getValue().toString();
+                            String albumImgUrl = child.child("filelist").child("1").child("url").getValue().toString();
+                            albumList.add(albumName);
+                            thumbnailUrls.add(albumImgUrl);
+                        }
+                    }
+                    gridAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    // ...
+                }
+            });
+
     }
 
     @Override
@@ -86,49 +142,62 @@ public class Albums extends AppCompatActivity {
 
         }
     }
-}
 
-class ImageAdapter_main extends BaseAdapter {
-    private Context mContext;
+    /*
+     * Created by 김민혁 on 2016-09-15
+     *  클래스 생성 : ImageAdapter
+     *
+     * Modify by 김민혁 on 2016-09-25
+     *  class명 충돌로 인해 이름변경 : ImageAdapter -> ImageAdapter_main
+     *
+     * Modify by 김민혁 on 2016-10-24
+     *  GalleryActivity내 GridAdapter로 전체 변경
+     */
+    class GridAdapter extends BaseAdapter {
+        //리스트 layout을 위한 변수 3개
+        Context context;
+        int layout;
+        LayoutInflater layoutInflater;
+        List arrayList;     //정보 받아올 list
 
-    //Test images
-    int[] picture = {
-            R.drawable.ab,
-            R.drawable.ab,
-            R.drawable.ic_action_name,
-            R.drawable.ab,
-            R.drawable.ic_action_name
-    };
-
-    public ImageAdapter_main(Context c) {
-        mContext = c;
-    }
-
-    public int getCount() {
-        return 12;
-    }
-
-    public Object getItem(int position) {
-        return picture[position % 5];
-    }
-
-    public long getItemId(int position) {
-        return position;
-    }
-
-    public View getView(int position, View convertView, ViewGroup parent) {
-        ImageView imageView;
-        if (convertView == null) {
-            imageView = new ImageView(mContext);
-            imageView.setLayoutParams(new GridView.LayoutParams(600, 600));
-            imageView.setAdjustViewBounds(false);
-            imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-
-        } else {
-            imageView = (ImageView) convertView;
+        public GridAdapter(Context context, int layout, List arrayList){
+            this.context = context;
+            this.layout = layout;
+            this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            this.arrayList = arrayList;
         }
 
-        imageView.setImageResource(picture[position % 5]);
-        return imageView;
+        @Override
+        public int getCount() {
+            return arrayList.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return arrayList.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+
+        public View getView(int i, View view, ViewGroup viewGroup) {
+            if (view==null)
+                view = layoutInflater.inflate(layout, null);
+            // Put it in the image view
+
+            final ImageView imageView = (ImageView) view.findViewById(R.id.albumThumbnailImage);
+            final long MAX_BYTE = 1024;
+
+            Glide.with(getApplicationContext())
+                    .load(getItem(i))
+                    .centerCrop()
+                    .override(256,256)
+                    .error(R.drawable.ic_action_name)
+                    .into(imageView);
+
+            return view;
+        }
     }
 }
