@@ -69,11 +69,11 @@ public class MainActivity extends AppCompatActivity {
                 Intent logintent = new Intent(MainActivity.this,Login.class);
                 startActivity(logintent);
                 break;
-            case R.id.goodnight:
-                //Album 액티비티 test용 Intent
-                Intent galleryIntent = new Intent(this,GalleryActivity.class);
-                startActivity(galleryIntent);
-                break;
+//            case R.id.goodnight:
+//                //Album 액티비티 test용 Intent
+//                Intent galleryIntent = new Intent(this,GalleryActivity.class);
+//                startActivity(galleryIntent);
+//                break;
         }
     }
 
