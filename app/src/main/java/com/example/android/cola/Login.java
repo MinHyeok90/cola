@@ -9,6 +9,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.VisibleForTesting;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -266,13 +267,77 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
 //                });
 //    }
 
+
     // [START signin]
+    //구글 아이디 로그인
     private void signIn() {
+        showProgressDialog();
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
     }
     // [END signin]
 
+    //이메일 로그인시 아이디 비밀번호 valid 여부
+    private boolean validateForm() {
+        boolean valid = true;
+
+        String email = myid.getText().toString();
+        if (TextUtils.isEmpty(email)) {
+            myid.setError("Required.");
+            valid = false;
+        } else {
+            myid.setError(null);
+        }
+
+        String password = mypasswd.getText().toString();
+        if (TextUtils.isEmpty(password)) {
+            mypasswd.setError("Required.");
+            valid = false;
+        } else {
+            mypasswd.setError(null);
+        }
+
+        return valid;
+    }
+
+    //이메일 로그인
+    private void signIn(String email, String password) {
+        Log.d(TAG, "signIn:" + email);
+        if (!validateForm()) {
+            return;
+        }
+
+        showProgressDialog();
+
+        // [START sign_in_with_email]
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "signInWithEmail:onComplete:" + task.isSuccessful());
+
+                        // If sign in fails, display a message to the user. If sign in succeeds
+                        // the auth state listener will be notified and logic to handle the
+                        // signed in user can be handled in the listener.
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "signInWithEmail:failed", task.getException());
+                            Toast.makeText(Login.this, R.string.auth_failed,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        // [START_EXCLUDE]
+                        if (!task.isSuccessful()) {
+                            mStatusTextView.setText(R.string.auth_failed);
+                        }
+                        hideProgressDialog();
+                        // [END_EXCLUDE]
+                    }
+                });
+        // [END sign_in_with_email]
+        mypasswd.setText("");
+        myid.setText("");
+    }
+    //로그아웃
     private void signOut() {
         // Firebase sign out
         mAuth.signOut();
@@ -329,13 +394,14 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 String pwd = mypasswd.getText().toString();
                 FirebaseUser user = mAuth.getCurrentUser();
 
-//                if (!pref.getValue(MyPreferenceManager.UID,"").equals("") && user != null) {
-//                    //이미 로그인 되어져 있습니다.
-//                    Toast.makeText(MyApplication.getInstance().getApplicationContext(), "로그인되어 있습니다.", Toast.LENGTH_SHORT).show();
-//
-//                    return;
-//                }
-//                signIn(id,pwd);
+                if (user != null) {
+                    //이미 로그인 되어져 있습니다.
+                    Toast.makeText(Login.this, "이미 로그인 되어져 있습니다.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                signIn(id,pwd);
+
                 break;
             case R.id.signUpid:
                 Intent intent = new Intent(Login.this,SignUpActivity.class);
