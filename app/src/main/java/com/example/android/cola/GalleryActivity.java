@@ -6,13 +6,7 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -24,19 +18,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.CursorAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -64,8 +52,6 @@ public class GalleryActivity extends AppCompatActivity {
     StorageReference storageRef =storage.getReferenceFromUrl("gs://cola-b6336.appspot.com");
     StorageReference imagesRef;
 
-    private int PICK_IMAGE_REQUEST = 1;
-    public final static int PICK_PHOTO_CODE = 1046;
     public final String TAG = "GalleryActivity";
     public String basePath = null;
     public GridView mGridView;
@@ -90,9 +76,9 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
-        String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
-        String albumName = "albumname" ;//인텐트에서 앨범 이름 받아오기
-        String startDate = "1476889200000"; //이것도 인텐트에서 날짜 받아오는게..
+        final String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
+        final String albumName = "albumname" ;//인텐트에서 앨범 이름 받아오기
+        final String startDate = "1476889200000"; //이것도 인텐트에서 날짜 받아오는게..
 
         DatabaseReference mReference =  myRef.child(albumKey).child("filelist");
 
@@ -101,14 +87,33 @@ public class GalleryActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         long s = Long.parseLong(startDate);
-        Date dates = new Date(s);
+        //Date dates = new Date(s);
 
         final List albumList = new ArrayList();
 
         mGridView = (GridView)findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList);
         mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
+        mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(activity, DetailActivity.class);
 
+                intent.putExtra("url", albumList.get(position).toString());
+                startActivity(intent);
+            }
+        });
+        /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });*/
         /*
         * filelist 변경될 때마다 호출됨
         */
@@ -226,21 +231,22 @@ public class GalleryActivity extends AppCompatActivity {
         }
     }
 
-    public class GridAdapter extends BaseAdapter{
+    public class GridAdapter extends BaseAdapter {
         Context context;
         int layout;
         LayoutInflater layoutInflater;
         List arrayList;
         //StorageReference storageReference;
 
-        public GridAdapter(Context context, int layout, List arrayList){
+        public GridAdapter(Context context, int layout, List arrayList) {
             this.context = context;
             this.layout = layout;
-            this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             this.arrayList = arrayList;
             //this.storageReference = storageReference;
 
         }
+
         @Override
         public int getCount() {
             return arrayList.size();
@@ -258,7 +264,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
-            if (view==null)
+            if (view == null)
                 view = layoutInflater.inflate(layout, null);
             // Put it in the image view
 
@@ -268,51 +274,11 @@ public class GalleryActivity extends AppCompatActivity {
             Glide.with(getApplicationContext())
                     .load(getItem(i))
                     .centerCrop()
-                    .override(256,256)
+                    .override(256, 256)
                     .error(R.drawable.ic_action_name)
                     .into(imageView);
 
             return view;
         }
-    }/*
-    public class ImageLoadTask extends AsyncTask<Void, Void, Bitmap> {
-
-        private String url;
-        private ImageView imageView;
-
-        public ImageLoadTask(String url, ImageView imageView) {
-            this.url = url;
-            this.imageView = imageView;
-        }
-
-        @Override
-        protected Bitmap doInBackground(Void... params) {
-            try {
-                URL urlConnection = new URL(url);
-                HttpURLConnection connection = (HttpURLConnection) urlConnection
-                        .openConnection();
-                connection.setDoInput(true);
-                connection.connect();
-                InputStream input = connection.getInputStream();
-
-
-                Bitmap myBitmap = BitmapFactory.decodeStream(input);
-                Bitmap thumbnail = ThumbnailUtils.extractThumbnail(myBitmap, 240,120);
-                return thumbnail;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Bitmap result) {
-            super.onPostExecute(result);
-            imageView.setImageBitmap(result);
-
-        }
-
     }
-*/
-
 }
