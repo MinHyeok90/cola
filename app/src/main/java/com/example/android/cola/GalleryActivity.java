@@ -13,6 +13,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,7 +51,7 @@ public class GalleryActivity extends AppCompatActivity {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("albumtest");
     public FirebaseStorage storage = FirebaseStorage.getInstance();
-    StorageReference storageRef =storage.getReferenceFromUrl("gs://cola-b6336.appspot.com");
+    StorageReference storageRef = storage.getReferenceFromUrl("gs://cola-b6336.appspot.com");
     StorageReference imagesRef;
 
     public final String TAG = "GalleryActivity";
@@ -58,29 +60,19 @@ public class GalleryActivity extends AppCompatActivity {
     public GridAdapter gridAdapter;
     public Activity activity = this;
 
-    public final long start = new Date((2016-1900),9,20,0,0,0).getTime();
+    public final long start = new Date((2016 - 1900), 9, 20, 0, 0, 0).getTime();
     private final List filenameList = new ArrayList();
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            // Respond to the action bar's Up/Home button
-            case android.R.id.home:
-                finish();
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
         final String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
-        final String albumName = "albumname" ;//인텐트에서 앨범 이름 받아오기
+        final String albumName = "albumname";//인텐트에서 앨범 이름 받아오기
         final String startDate = "1476889200000"; //이것도 인텐트에서 날짜 받아오는게..
 
-        DatabaseReference mReference =  myRef.child(albumKey).child("filelist");
+        DatabaseReference mReference = myRef.child(albumKey).child("filelist");
 
         // ActionBar에 타이틀 변경
         getSupportActionBar().setTitle(albumName);
@@ -91,7 +83,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         final List albumList = new ArrayList();
 
-        mGridView = (GridView)findViewById(R.id.gridView);
+        mGridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList);
         mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -118,47 +110,48 @@ public class GalleryActivity extends AppCompatActivity {
         * filelist 변경될 때마다 호출됨
         */
         mReference.addValueEventListener(
-            new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    albumList.clear();
-                    filenameList.clear();
-                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        if(child != null) {
-                            //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        albumList.clear();
+                        filenameList.clear();
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            if (child != null) {
+                                //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
                             /*
                             * db에서 받아온 url, filename 등을 어댑터에 bind된 arrayList에 넣고
                             * 어댑터에 notifyDataSetChanged 해줌
                             */
-                            String fileUri = child.child("url").getValue().toString();
-                            String fileName = child.child("filename").getValue().toString();
-                            albumList.add(fileUri);
-                            filenameList.add(fileName);
+                                String fileUri = child.child("url").getValue().toString();
+                                String fileName = child.child("filename").getValue().toString();
+                                albumList.add(fileUri);
+                                filenameList.add(fileName);
+                            }
                         }
+                        gridAdapter.notifyDataSetChanged();
+
                     }
-                    gridAdapter.notifyDataSetChanged();
 
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    // ...
-                }
-            });
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                        // ...
+                    }
+                });
     }
+
     @Override
-    public boolean onSupportNavigateUp()
-    {
+    public boolean onSupportNavigateUp() {
         return super.onSupportNavigateUp();
     }
-    void onClick(View v){
+
+    void onClick(View v) {
 
         switch (v.getId()) {
 
             case R.id.loadButton:
                 String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
-                final DatabaseReference mReference =  myRef.child(albumKey).child("filelist");
+                final DatabaseReference mReference = myRef.child(albumKey).child("filelist");
                 final StorageReference albumReference = storageRef.child(albumKey);
 
                 //최근 파일 불러오기, projection: select할 필드 선택
@@ -169,23 +162,24 @@ public class GalleryActivity extends AppCompatActivity {
                         MediaStore.Images.ImageColumns.DATE_TAKEN,
                         MediaStore.Images.ImageColumns.MIME_TYPE
                 };
-                String where = MediaStore.Images.Media.DATE_TAKEN +" >= " + start;
+                String where = MediaStore.Images.Media.DATE_TAKEN + " >= " + start;
 
                 //문제 있음. 외장메모리 없는 경우 External_content_url 작동 안함
                 //Internal_conent_uri로 실행 시 잘 안 되는 것 같음
                 Cursor cursor = getContentResolver()
                         .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, where,
-                                null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");; //returns cursor with 3 columns mentioned above
+                                null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
+                ; //returns cursor with 3 columns mentioned above
 
                 boolean a = cursor.isAfterLast();
-                while(cursor.moveToNext()){
+                while (cursor.moveToNext()) {
                     String filePath = cursor.getString(1);
-                    final String filename = filePath.split("/")[filePath.split("/").length-1];
-                    if(!filenameList.contains(filename)) {
+                    final String filename = filePath.split("/")[filePath.split("/").length - 1];
+                    if (!filenameList.contains(filename)) {
                         BitmapFactory.Options options = new BitmapFactory.Options();
                         options.inSampleSize = 4;
-                        Bitmap src = BitmapFactory.decodeFile( filePath, options );
-                        Bitmap resized = Bitmap.createScaledBitmap( src, 256, 256, true );
+                        Bitmap src = BitmapFactory.decodeFile(filePath, options);
+                        Bitmap resized = Bitmap.createScaledBitmap(src, 256, 256, true);
 
                         ByteArrayOutputStream bos = new ByteArrayOutputStream();
                         resized.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
@@ -279,6 +273,29 @@ public class GalleryActivity extends AppCompatActivity {
                     .into(imageView);
 
             return view;
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_gallery, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_invite:
+                Intent intent = new Intent(this, AddNewMemberActivity.class);
+                startActivity(intent);
+
+                return true;
+
+            default:
+                // If we got here, the user's action was not recognized.
+                // Invoke the superclass to handle it.
+                return super.onOptionsItemSelected(item);
         }
     }
 }

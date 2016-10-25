@@ -53,19 +53,15 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
     // [START declare_auth_listener]
     private FirebaseAuth.AuthStateListener mAuthListener;
     // [END declare_auth_listener]
-    Button btnsignup;
-    Button btnlogin;
-    SignInButton btningmail;
-    Button btnoutgmail;
-    EditText myid;
-    EditText mypasswd;
-    Context mcontext;
-
+    private Button btnsignup;
+    private Button btnlogin;
+    private SignInButton btningmail;
+    private Button btnoutgmail;
+    private EditText myid;
+    private EditText mypasswd;
+    private Context mcontext;
 
     GoogleApiClient mGoogleApiClient;
-    private TextView mStatusTextView;
-    private TextView mDetailTextView;
-
 
     public LoginActivity() {
     }
@@ -132,9 +128,6 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
 
         myid = (EditText) findViewById(R.id.editText);
         mypasswd = (EditText) findViewById(R.id.editText2);
-        mStatusTextView = (TextView) findViewById(R.id.status);
-        mDetailTextView = (TextView) findViewById(R.id.detail);
-
 
         btnlogin.setOnClickListener(this);
         btnsignup.setOnClickListener(this);
@@ -191,7 +184,6 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
             if (result.isSuccess()) {
                 // Google Sign In was successful, authenticate with Firebase
                 GoogleSignInAccount account = result.getSignInAccount();
-                mStatusTextView.setText("onActivityResult 로그인에 성공했습니다.");
                 firebaseAuthWithGoogle(account);
 
                 //Intent listintent = new Intent(this,FriendListActivity.class);
@@ -201,7 +193,6 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                 startActivity(intent);
             } else {
                 Log.d(TAG, "failed: " + result.toString() + ", " + result.getStatus());
-                mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
                 // Google Sign In failed, update UI appropriately
                 updateUI(null);
             }
@@ -321,7 +312,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
 
                         // [START_EXCLUDE]
                         if (!task.isSuccessful()) {
-                            mStatusTextView.setText(R.string.auth_failed);
+
                         }
                         hideProgressDialog();
                         // [END_EXCLUDE]
