@@ -11,24 +11,22 @@
     tools:context="com.example.android.cola.MainActivity">
 
     <Button
-        android:id = "@+id/hi"
+        android:id = "@+id/btAlbum"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="40dp"
         android:background="@android:color/holo_red_light"
         android:textColor="@android:color/white"
-        android:text="Album"
-        android:onClick="onClick"/>
+        android:text="Album" />
     <Button
-        android:id = "@+id/bye"
+        android:id = "@+id/btLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="40dp"
         android:layout_marginTop="8dp"
         android:background="@android:color/holo_blue_bright"
         android:textColor="@android:color/white"
-        android:text="Login"
-        android:onClick="onClick"/>
+        android:text="Login" />
     <!--<Button-->
         <!--android:id = "@+id/goodnight"-->
         <!--android:layout_width="match_parent"-->
