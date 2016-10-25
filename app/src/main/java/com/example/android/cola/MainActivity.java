@@ -1,79 +1,45 @@
 package com.example.android.cola;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.ColorDrawable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-public class MainActivity extends AppCompatActivity {
-    Button btn1;
-    Button btn2;
-    String emotion;
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private static final String TAG = "MainActivity";
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference myRef = database.getReference("msg");
+
+    private Button mLogin;
+    private Button mAlbum;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btn1 = (Button)findViewById(R.id.hi);
-        btn2 = (Button)findViewById(R.id.bye);
-        init();
+        mLogin = (Button) findViewById(R.id.btLogin);
+        mLogin.setOnClickListener(this);
+        mAlbum = (Button) findViewById(R.id.btAlbum);
+        mAlbum.setOnClickListener(this);
     }
-    void init(){
-        myRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                // This method is called once with the initial value and again
-                // whenever data at this location is updated.
-                String value = dataSnapshot.getValue(String.class);//return 값이 뭐든지 가능
-            }
 
-            @Override
-            public void onCancelled(DatabaseError error) {
-                // Failed to read value
-                Log.w(TAG, "Failed to read value.", error.toException());
-            }
-        });
-
-    }
-    void onClick(View v){
-
+    @Override
+    public void onClick(View v) {
         switch (v.getId()) {
-            case R.id.hi:
+            case R.id.btAlbum:
                 Toast.makeText(this, "hi", Toast.LENGTH_SHORT).show();
-
-                emotion = "hello";
-                myRef.setValue(emotion);
-
-                //Album 액티비티 test용 Intent
-                Intent intent = new Intent(MainActivity.this,Albums.class);
+                Intent intent = new Intent(MainActivity.this, Albums.class);
                 startActivity(intent);
                 break;
-            case R.id.bye:
-                Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
-                emotion = "goodbye";
-                myRef.setValue(emotion);
 
-                Intent logintent = new Intent(MainActivity.this,Login.class);
+            case R.id.btLogin:
+                Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
+                Intent logintent = new Intent(MainActivity.this, Login.class);
                 startActivity(logintent);
                 break;
-//            case R.id.goodnight:
-//                //Album 액티비티 test용 Intent
-//                Intent galleryIntent = new Intent(this,GalleryActivity.class);
-//                startActivity(galleryIntent);
-//                break;
+
+            default:
+                break;
         }
     }
 
