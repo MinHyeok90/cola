@@ -200,6 +200,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                 Intent intent = new Intent(this, AlbumsActivity.class);
                 startActivity(intent);
             } else {
+                Log.d(TAG, "failed: " + result.toString() + ", " + result.getStatus());
                 mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
                 // Google Sign In failed, update UI appropriately
                 updateUI(null);

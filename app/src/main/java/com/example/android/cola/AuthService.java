@@ -1,6 +1,6 @@
 package com.example.android.cola;
 
-import com.firebase.client.Firebase;
+
 
 import java.util.HashMap;
 
