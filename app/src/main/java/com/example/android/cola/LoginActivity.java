@@ -104,6 +104,12 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                     myRef.child(user.getUid()).setValue(myUser);
 
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+                    Intent intent = new Intent(LoginActivity.this, AlbumsActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
