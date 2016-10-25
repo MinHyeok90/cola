@@ -107,13 +107,10 @@ public class SignUpActivity extends AppCompatActivity implements TextView.OnEdit
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
-                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+                    User myUser = new User(user.getUid(), user.getEmail(), user.getDisplayName(), user.getPhotoUrl().toString());
+                    myRef.child(user.getUid()).setValue(myUser);
 
-                    //String key =  myRef.child("users").push().getKey();
-                    User myUser = new User(user.getUid(),user.getEmail());
-                    String key = myUser.getUid();
-                    //myRef.push().setValue(myUser.getUid());
-                    myRef.child(myUser.getUid()).child("email").setValue(myUser.getEmail());
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
 
                 } else {
                     // User is signed out
