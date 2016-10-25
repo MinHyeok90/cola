@@ -41,6 +41,7 @@ public class FriendListActivity extends AppCompatActivity implements View.OnClic
     ArrayList<FriendListItem> items;
     FriendListAdapter adapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
