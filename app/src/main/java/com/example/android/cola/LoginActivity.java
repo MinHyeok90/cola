@@ -1,14 +1,9 @@
 package com.example.android.cola;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.VisibleForTesting;
-import android.support.v4.app.FragmentActivity;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -23,9 +18,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.Api;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -38,19 +31,14 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.FileDescriptor;
-import java.io.PrintWriter;
-import java.util.concurrent.TimeUnit;
-
 /**
  * Created by Krivnon on 2016-09-05.
- *
+ * <p>
  * Modify by 김민혁 on 2016-10-24
- *  메소드 수정 : onActivityResult
- *   로그인 성공하면 album 액티비티로 이동.
- *
+ * 메소드 수정 : onActivityResult
+ * 로그인 성공하면 album 액티비티로 이동.
  */
-public class Login extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
+public class LoginActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
     private static final String TAG = "Login";
     private static final int RC_SIGN_IN = 9001;
 
@@ -79,10 +67,10 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
     private TextView mDetailTextView;
 
 
-    public Login() {
+    public LoginActivity() {
     }
 
-    public Login(Context context){
+    public LoginActivity(Context context) {
         mcontext = context;
     }
 
@@ -100,8 +88,8 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 .build();
         // [END config_signin]
 
-        mGoogleApiClient = new GoogleApiClient.Builder(Login.this)
-                .enableAutoManage(Login.this /* FragmentActivity */, this /* OnConnectionFailedListener */)
+        mGoogleApiClient = new GoogleApiClient.Builder(LoginActivity.this)
+                .enableAutoManage(LoginActivity.this /* FragmentActivity */, this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 
@@ -112,12 +100,9 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
-                    //String key =  myRef.child("users").push().getKey();
-                    User myUser = new User(user.getUid(),user.getEmail());
-                    String key = myUser.getUid();
-                    //myRef.push().setValue(myUser.getUid());
-                    myRef.child(myUser.getUid()).child("email").setValue(myUser.getEmail());
+                    User myUser = new User(user.getUid(), user.getEmail(), user.getDisplayName(), user.getPhotoUrl().toString());
+                    myRef.child(user.getUid()).setValue(myUser);
+
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                 } else {
                     // User is signed out
@@ -132,16 +117,17 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
 
         init();
     }
-    void init(){
-        btnlogin = (Button)findViewById(R.id.loginbtn);
-        btnsignup = (Button)findViewById(R.id.signUpid);
-        btningmail = (SignInButton) findViewById(R.id.sign_in_gmail);
-        btnoutgmail = (Button)findViewById(R.id.sign_out_gmail);
 
-        myid = (EditText)findViewById(R.id.editText);
-        mypasswd = (EditText)findViewById(R.id.editText2);
-        mStatusTextView = (TextView)findViewById(R.id.status);
-        mDetailTextView = (TextView)findViewById(R.id.detail);
+    void init() {
+        btnlogin = (Button) findViewById(R.id.loginbtn);
+        btnsignup = (Button) findViewById(R.id.signUpid);
+        btningmail = (SignInButton) findViewById(R.id.sign_in_gmail);
+        btnoutgmail = (Button) findViewById(R.id.sign_out_gmail);
+
+        myid = (EditText) findViewById(R.id.editText);
+        mypasswd = (EditText) findViewById(R.id.editText2);
+        mStatusTextView = (TextView) findViewById(R.id.status);
+        mDetailTextView = (TextView) findViewById(R.id.detail);
 
 
         btnlogin.setOnClickListener(this);
@@ -154,7 +140,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
     @Override
     public void onStart() {
         // [START auth_state_listener]
-        mAuth.addAuthStateListener(Login.this.mAuthListener);
+        mAuth.addAuthStateListener(LoginActivity.this.mAuthListener);
         // [END auth_state_listener]
         super.onStart();
     }
@@ -205,7 +191,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                 //Intent listintent = new Intent(this,FriendListActivity.class);
                 //startActivity(listintent);
                 ////로그인 성공시, 앨범집으로 이동합니다.
-                Intent intent = new Intent(this,Albums.class);
+                Intent intent = new Intent(this, AlbumsActivity.class);
                 startActivity(intent);
             } else {
                 mStatusTextView.setText("onActivityResult 로그인에 실패했습니다.");
@@ -222,7 +208,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
 
         AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
         mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(Login.this, new OnCompleteListener<AuthResult>() {
+                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "signInWithCredential:onComplete:" + task.isSuccessful());
@@ -232,7 +218,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
                             Log.w(TAG, "signInWithCredential", task.getException());
-                            Toast.makeText(Login.this, "Authentication failed.",
+                            Toast.makeText(LoginActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
                         }
                     }
@@ -317,11 +303,11 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
                             Log.w(TAG, "signInWithEmail:failed", task.getException());
-                            Toast.makeText(Login.this, R.string.auth_failed,
+                            Toast.makeText(LoginActivity.this, R.string.auth_failed,
                                     Toast.LENGTH_SHORT).show();
-                        }else{
+                        } else {
                             ////로그인 성공시, 앨범집으로 이동합니다.
-                            Intent intent = new Intent(Login.this,Albums.class);
+                            Intent intent = new Intent(LoginActivity.this, AlbumsActivity.class);
                             startActivity(intent);
 
                         }
@@ -338,6 +324,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
         mypasswd.setText("");
         myid.setText("");
     }
+
     //로그아웃
     private void signOut() {
         // Firebase sign out
@@ -389,7 +376,7 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.loginbtn:
                 String id = myid.getText().toString();
                 String pwd = mypasswd.getText().toString();
@@ -397,22 +384,22 @@ public class Login extends BaseActivity implements GoogleApiClient.OnConnectionF
 
                 if (user != null) {
                     //이미 로그인 되어져 있습니다.
-                    Toast.makeText(Login.this, "이미 로그인 되어져 있습니다.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "이미 로그인 되어져 있습니다.", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                signIn(id,pwd);
+                signIn(id, pwd);
 
                 break;
             case R.id.signUpid:
-                Intent intent = new Intent(Login.this,SignUpActivity.class);
+                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
                 startActivity(intent);
                 break;
             case R.id.sign_in_gmail:
-                    signIn();
+                signIn();
                 break;
             case R.id.sign_out_gmail:
-                    signOut();
+                signOut();
                 break;
         }
     }

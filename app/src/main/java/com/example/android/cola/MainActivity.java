@@ -28,13 +28,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.btAlbum:
                 Toast.makeText(this, "hi", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(MainActivity.this, Albums.class);
+                Intent intent = new Intent(MainActivity.this, AlbumsActivity.class);
                 startActivity(intent);
                 break;
 
             case R.id.btLogin:
                 Toast.makeText(this, "goodbye", Toast.LENGTH_SHORT).show();
-                Intent logintent = new Intent(MainActivity.this, Login.class);
+                Intent logintent = new Intent(MainActivity.this, LoginActivity.class);
                 startActivity(logintent);
                 break;
 

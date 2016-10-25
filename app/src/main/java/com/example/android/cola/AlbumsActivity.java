@@ -2,7 +2,6 @@ package com.example.android.cola;
 
 import android.content.Context;
 import android.content.Intent;
-import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -50,7 +49,7 @@ import java.util.List;
  *
  */
 
-public class Albums extends AppCompatActivity {
+public class AlbumsActivity extends AppCompatActivity {
 
     /* Modify by 김민혁 on 2016-10-24 */
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -78,11 +77,11 @@ public class Albums extends AppCompatActivity {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(Albums.this, i + "번째 그림 선택",
+                Toast.makeText(AlbumsActivity.this, i + "번째 그림 선택",
                         Toast.LENGTH_SHORT).show();
 
                 //GalleryActivity로 연결(DB 연동X)
-                Intent intent = new Intent(Albums.this, GalleryActivity.class);
+                Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
                 startActivity(intent);
             }
         });

@@ -20,8 +20,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".GalleryActivity" />
-        <activity android:name=".Albums" />
-        <activity android:name=".Login" />
+        <activity android:name=".AlbumsActivity" />
+        <activity android:name=".LoginActivity" />
         <activity android:name=".SignUpActivity" />
         <activity android:name=".FriendListActivity" />
         <activity android:name=".DetailActivity"></activity>
