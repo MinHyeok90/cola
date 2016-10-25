@@ -4,31 +4,51 @@ package com.example.android.cola;
  * Created by Krivnon on 2016-09-25.
  */
 class User {
-    private String Uid;
-    private String Email;
+    private String mUid;
+    private String mEmail;
+    private String mUserName;
+    private String mPhotoUrl;
+
 
     User() {
     }
 
-    User(String m_Uid, String m_Email) {
-        Uid = m_Uid;
-        Email = m_Email;
+    public User(String mUid, String mEmail, String mUserName, String mPhotoUrl) {
+        this.mUid = mUid;
+        this.mEmail = mEmail;
+        this.mUserName = mUserName;
+        this.mPhotoUrl = mPhotoUrl;
     }
 
-    public String getUid() {
-        return Uid;
+    public String getmUid() {
+        return mUid;
     }
 
-    public void setUid(String uid) {
-        Uid = uid;
+    public void setmUid(String mUid) {
+        this.mUid = mUid;
     }
 
-    public String getEmail() {
-        return Email;
+    public String getmEmail() {
+        return mEmail;
     }
 
-    public void setEmail(String email) {
-        Email = email;
+    public void setmEmail(String mEmail) {
+        this.mEmail = mEmail;
     }
 
+    public String getmUserName() {
+        return mUserName;
+    }
+
+    public void setmUserName(String mUserName) {
+        this.mUserName = mUserName;
+    }
+
+    public String getmPhotoUrl() {
+        return mPhotoUrl;
+    }
+
+    public void setmPhotoUrl(String mPhotoUrl) {
+        this.mPhotoUrl = mPhotoUrl;
+    }
 }
