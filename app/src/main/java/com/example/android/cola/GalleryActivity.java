@@ -68,9 +68,11 @@ public class GalleryActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gallery);
 
-        final String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
-        final String albumName = "albumname";//인텐트에서 앨범 이름 받아오기
-        final String startDate = "1476889200000"; //이것도 인텐트에서 날짜 받아오는게..
+        Intent intent = getIntent();
+
+        final String albumKey = intent.getStringExtra("albumKey");// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
+        final String albumName = intent.getStringExtra("albumName");//인텐트에서 앨범 이름 받아오기
+        final String startDate = intent.getStringExtra("albumDate"); //이것도 인텐트에서 날짜 받아오는게..
 
         DatabaseReference mReference = myRef.child(albumKey).child("filelist");
 
