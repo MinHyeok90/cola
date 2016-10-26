@@ -48,6 +48,7 @@
         <activity android:name=".FriendListActivity" />
         <activity
             android:name=".DetailActivity"
+            android:theme="@style/NoTitle"
             android:parentActivityName=".GalleryActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
