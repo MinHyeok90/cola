@@ -66,7 +66,9 @@ public class AlbumsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_albums);
 
         Intent it = getIntent();
-        final List albumList = new ArrayList();
+        final List albumKeyList = new ArrayList();
+        final List albumNameList = new ArrayList();
+        final List albumDateList = new ArrayList();
         final List thumbnailUrls = new ArrayList();
 
         mGridView = (GridView)findViewById(R.id.gridview);
@@ -82,6 +84,9 @@ public class AlbumsActivity extends AppCompatActivity {
 
                 //GalleryActivity로 연결(DB 연동X)
                 Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
+                intent.putExtra("albumKey",albumKeyList.get(i).toString());
+                intent.putExtra("albumName",albumNameList.get(i).toString());
+                intent.putExtra("albumDate",albumDateList.get(i).toString());
                 startActivity(intent);
             }
         });
@@ -91,16 +96,22 @@ public class AlbumsActivity extends AppCompatActivity {
             new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    albumList.clear();
+                    albumKeyList.clear();
+                    albumNameList.clear();
+                    albumDateList.clear();
                     thumbnailUrls.clear();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         //String idx = child.getKey().toString();
                         if(child != null) {
-//                            Log.d(TAG, "album_addValueEventListener : "+child.toString());
+                            String albumKey = child.getKey().toString();
                             String albumName = child.child("name").getValue().toString();
+                            String albumDate = child.child("created_at").getValue().toString();
                             String albumImgUrl = child.child("filelist").child("1").child("url").getValue().toString();
-                            albumList.add(albumName);
+                            albumKeyList.add(albumKey);
+                            albumNameList.add(albumName);
+                            albumDateList.add(albumDate);
                             thumbnailUrls.add(albumImgUrl);
+                            Log.d(TAG, "albumkey : "+albumKey);
                         }
                     }
                     gridAdapter.notifyDataSetChanged();
