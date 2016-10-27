@@ -169,26 +169,26 @@ public class AlbumsActivity extends AppCompatActivity {
         Context context;
         int layout;
         LayoutInflater layoutInflater;
-        List arrayList;     //정보 받아올 list
+        List thumnailList;     //정보 받아올 list
         List titleList;     //정보 받아올 list
         List dateList;     //정보 받아올 list
 
-        public GridAdapter(Context context, int layout, List arrayList, List nameList, List dateList){
+        public GridAdapter(Context context, int layout, List thumnailList, List nameList, List dateList){
             this.context = context;
             this.layout = layout;
             this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            this.arrayList = arrayList;
+            this.thumnailList = thumnailList;
             this.titleList = nameList;
             this.dateList = dateList;
         }
 
         @Override
         public int getCount() {
-            return arrayList.size();
+            return thumnailList.size();
         }
 
         @Override
-        public Object getItem(int i) { return arrayList.get(i); }
+        public Object getItem(int i) { return thumnailList.get(i); }
         public Object getTitle(int i) { return titleList.get(i); }
         public Object getDate(int i) { return dateList.get(i); }
 
