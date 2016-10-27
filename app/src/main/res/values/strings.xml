@@ -49,6 +49,7 @@
     <string name="action_settings">Setting</string>
     <string name="action_add_album">Add Album</string>
     <string name="action_invite">Invite</string>
+    <string name="action_addpicture">Add Picture</string>
     <string name="add_new_member">Add new member</string>
     <string name="db_album">albumtest</string>
 

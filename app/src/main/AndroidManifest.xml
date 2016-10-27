@@ -12,7 +12,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".LoginActivity"
             android:theme="@style/FullTheme">
@@ -22,11 +21,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity android:name=".SignUpActivity" />
-
-        <activity android:name=".AlbumsActivity"></activity>
-
+        <activity android:name=".AlbumsActivity" />
         <activity
             android:name=".GalleryActivity"
             android:parentActivityName=".AlbumsActivity">
@@ -34,7 +30,6 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".AlbumsActivity" />
         </activity>
-
         <activity
             android:name=".AddNewMemberActivity"
             android:label="@string/add_new_member"
@@ -44,18 +39,16 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".GalleryActivity" />
         </activity>
-
         <activity android:name=".FriendListActivity" />
         <activity
             android:name=".DetailActivity"
-            android:theme="@style/NoTitle"
-            android:parentActivityName=".GalleryActivity">
+            android:parentActivityName=".GalleryActivity"
+            android:theme="@style/NoTitle">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".GalleryActivity" />
         </activity>
-
-
+        <activity android:name=".ImagePickActivity"></activity>
     </application>
 
 </manifest>

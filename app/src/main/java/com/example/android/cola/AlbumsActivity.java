@@ -41,6 +41,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -302,7 +303,9 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             final TextView titleView = (TextView) view.findViewById(R.id.albumThumbnailTitle);
             titleView.setText(getTitle(i).toString());
             final TextView dateView = (TextView) view.findViewById(R.id.albumThumbnailDate);
-            dateView.setText(getDate(i).toString());
+            Date date = new Date(Long.parseLong(getDate(i).toString()));
+            SimpleDateFormat format = new SimpleDateFormat("yy년 MM월 dd일");
+            dateView.setText(format.format(date));
 
             return view;
         }
