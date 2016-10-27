@@ -1,6 +1,7 @@
 package com.example.android.cola;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -8,7 +9,9 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.Image;
 import android.net.Uri;
+import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
@@ -47,7 +50,11 @@ import org.w3c.dom.Text;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -70,9 +77,18 @@ public class GalleryActivity extends AppCompatActivity {
     public GridView mGridView;
     public GridAdapter gridAdapter;
     public Activity activity = this;
+    public final int REQ_CODE_PICK_PICTURE = 335;
 
     public final long start = new Date((2016 - 1900), 9, 20, 0, 0, 0).getTime();
     private final List filenameList = new ArrayList();
+
+    /**
+     * 2016.10.27. by 김미래
+     * 아래 3개 값 전역변수로 변경
+     */
+    private String mAlbumKey  = null;
+    private String mAlbumName = null;
+    private String mStartDate = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,17 +97,17 @@ public class GalleryActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
 
-        final String albumKey = intent.getStringExtra("albumKey");// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
-        final String albumName = intent.getStringExtra("albumName");//인텐트에서 앨범 이름 받아오기
-        final String startDate = intent.getStringExtra("albumDate"); //이것도 인텐트에서 날짜 받아오는게..
+        mAlbumKey = intent.getStringExtra("albumKey");// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
+        mAlbumName = intent.getStringExtra("albumName");//인텐트에서 앨범 이름 받아오기
+        mStartDate = intent.getStringExtra("albumDate"); //이것도 인텐트에서 날짜 받아오는게..
 
-        DatabaseReference mReference = myRef.child(albumKey).child("filelist");
+        DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
 
         // ActionBar에 타이틀 변경
-        getSupportActionBar().setTitle(albumName);
+        getSupportActionBar().setTitle(mAlbumName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        long s = Long.parseLong(startDate);
+        long s = Long.parseLong(mStartDate);
         //Date dates = new Date(s);
 
         final List albumList = new ArrayList();
@@ -102,9 +118,10 @@ public class GalleryActivity extends AppCompatActivity {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String uri = albumList.get(position).toString();
                 Intent intent = new Intent(activity, DetailActivity.class);
 
-                intent.putExtra("url", albumList.get(position).toString());
+                intent.putExtra("url", uri);
                 startActivity(intent);
             }
         });
@@ -163,9 +180,9 @@ public class GalleryActivity extends AppCompatActivity {
         switch (v.getId()) {
 
             case R.id.loadButton:
-                String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
-                final DatabaseReference mReference = myRef.child(albumKey).child("filelist");
-                final StorageReference albumReference = storageRef.child(albumKey);
+                //String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
+                final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
+                final StorageReference albumReference = storageRef.child(mAlbumKey);
 
                 //최근 파일 불러오기, projection: select할 필드 선택
                 String[] projection = new String[]{
@@ -293,6 +310,7 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_gallery, menu);
+        inflater.inflate(R.menu.menu_addpicture, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -348,10 +366,92 @@ public class GalleryActivity extends AppCompatActivity {
                 startActivity(intent);
 
                 return true;
+
+            case R.id.action_addpicture:
+                /*
+                Intent intent2 = new Intent(this, ImagePickActivity.class);
+                startActivity(intent2);
+                */
+                Intent i = new Intent(Intent.ACTION_PICK);
+                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                i.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
+                i.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI); // images on the SD card.
+
+                // 결과를 리턴하는 Activity 호출
+                startActivityForResult(i, REQ_CODE_PICK_PICTURE);
+
+                return true;
+
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
         }
+    }
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode == RESULT_OK){
+            if(requestCode == REQ_CODE_PICK_PICTURE){
+                ClipData clipData = data.getClipData();
+                int total = 0;
+                Uri uri = null;
+                if(clipData == null) {
+                    uri = data.getData();
+                    total = 1;
+                }
+                else {
+                    total = clipData.getItemCount();
+                }
+
+                for (int i = 0; i < total; i++) {
+                    if(clipData != null) {
+                        uri = clipData.getItemAt(i).getUri();
+                    }
+                    final Uri imageUri = uri;
+                    final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
+                    final StorageReference albumReference = storageRef.child(mAlbumKey);
+                    final int count = i + 1;
+                    final int totalCount = total;
+
+                    InputStream stream = null;
+                    try {
+                        stream = new FileInputStream(new File(uri.toString()));
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
+
+                    /*if(albumReference.getName().equals(albumReference.getName())){
+                        continue;
+                    }*/
+                    UploadTask uploadTask = albumReference.putStream(stream);
+                    uploadTask.addOnFailureListener(new OnFailureListener() {
+                        @Override
+                        public void onFailure(@NonNull Exception exception) {
+                            // Handle unsuccessful uploads
+                        }
+                    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
+                            Uri downloadUrl = taskSnapshot.getDownloadUrl();
+
+                            DatabaseReference r = mReference.push();
+                            String filename = taskSnapshot.getMetadata().getName();
+                            r.child("url").setValue(downloadUrl.toString());
+                            r.child("filename").setValue(filename);
+
+                        }
+                    }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
+                        @Override
+                        public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
+                            TextView progressView = (TextView) findViewById(R.id.progress);
+                            double progress = 100.0 * count * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()) / totalCount;
+                            System.out.println("Upload is " + progress + "% done");
+                            progressView.setText("uploading: " + progress + "%");
+                        }
+                    });
+                }
+            }
+        }
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
