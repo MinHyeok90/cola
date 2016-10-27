@@ -3,7 +3,6 @@ package com.example.android.cola;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -31,13 +30,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /*
  * Created by 김민혁 on 2016-09-15
@@ -56,8 +52,12 @@ import java.util.Set;
  * Modify by 김민혁 on 2016-10-24
  *  앨범 선택하면 GalleryActivity로 연결(DB 연동X).
  *  DB연동을 위해 클래스 ImageAdapter_main를 inner class로 변경
- *  DB 연동해서 album list 얻어오기.
- *  받은 정보를 이용해, 갤러리의 첫번째 그림을 출력하도록 변경
+ *  받은 정보를 이용해, 갤러리의 첫번째 그림을 썸네일로 출력함
+ *
+ * Modify by 김민혁 on 2016-10-27
+ *  album 제목, 날짜 출력.
+ *  제목 지정해서 새로운 앨범 생성기능 추가.
+ *  update, delete 기능 추가하려다가 갤러리에서 추가하기로 함. -> 관련코드 주석처리.
  *
  */
 
@@ -142,7 +142,7 @@ public class AlbumsActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
+        inflater.inflate(R.menu.menu_album, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -150,7 +150,7 @@ public class AlbumsActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_favorite:
+            case R.id.action_add_album:
                 /* 추가 버튼 클릭시, 대화상자 출력 */
                 AlertDialog.Builder bld = new AlertDialog.Builder(this);
                 bld.setTitle("새 앨범 추가");
@@ -181,6 +181,9 @@ public class AlbumsActivity extends AppCompatActivity {
                 bld.show();
 
                 return true;
+
+//            case R.id.action_edit_album:
+//                return true;
 
             default:
                 // If we got here, the user's action was not recognized.

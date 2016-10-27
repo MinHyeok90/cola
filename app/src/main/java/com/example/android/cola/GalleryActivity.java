@@ -2,16 +2,20 @@ package com.example.android.cola;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -20,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -37,13 +42,19 @@ import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
+import org.w3c.dom.Text;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import static android.R.id.input;
 
 
 public class GalleryActivity extends AppCompatActivity {
@@ -285,15 +296,58 @@ public class GalleryActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /* 메뉴 기능 */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        AlertDialog.Builder bld;    //대화상자 출력준비.
         switch (item.getItemId()) {
+            case R.id.action_edit_album_title:
+                /* 이름변경 버튼 클릭시, 대화상자 출력 */
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("앨범 이름 변경");
+                final EditText input = new EditText(this);
+                input.setHint("새로운 앨범 제목을 작성해주세요.");
+//                input.setText();
+                bld.setView(input);
+                bld.setIcon(R.drawable.imoticon1);
+                bld.setPositiveButton("변경",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        /* 변경 시작 */
+
+                    }
+                });
+                bld.setNegativeButton("취소",null);
+                bld.show();
+
+                return true;
+            case R.id.action_exit_album:
+                /* 나가기 버튼 클릭시, 확인 대화상자 출력 */
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("앨범에서 나가기");
+                final TextView output = new TextView(this);
+                output.setText("이 앨범을 더 이상 보지 않으시겠습니까?");
+                output.setTextSize(24);
+                output.setTextColor(Color.RED);
+                output.setGravity(Gravity.CENTER);
+                bld.setView(output);
+                bld.setIcon(R.drawable.imoticon1);
+                bld.setPositiveButton("앨범에서 나가기",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        /* 이탈하기 */
+                        DatabaseReference myRef = database.getReference("group");
+                    }
+                });
+                bld.setNegativeButton("취소",null);
+                bld.show();
+
+                return true;
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
                 startActivity(intent);
 
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
