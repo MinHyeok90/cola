@@ -1,5 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".AlbumsActivity">
     <!-- "Mark Favorite", should appear as action button if possible -->
     <!--<item-->
         <!--android:id="@+id/action_edit_album"-->
@@ -9,5 +11,9 @@
         android:id="@+id/action_add_album"
         android:title="@string/action_add_album"
         app:showAsAction="ifRoom"/>
+    <item
+        android:id="@+id/action_logout"
+        android:title="로그아웃"
+        app:showAsAction="always"/>
 
 </menu>

@@ -441,20 +441,18 @@ public class GalleryActivity extends AppCompatActivity {
                     final Uri imageUri = uri;
                     final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
                     final StorageReference albumReference = storageRef.child(mAlbumKey);
+                    StorageReference imageRef = albumReference.child(uri.getLastPathSegment());
+
                     final int count = i + 1;
                     final int totalCount = total;
-
-                    InputStream stream = null;
-                    try {
-                        stream = new FileInputStream(new File(uri.toString()));
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
 
                     /*if(albumReference.getName().equals(albumReference.getName())){
                         continue;
                     }*/
-                    UploadTask uploadTask = albumReference.putStream(stream);
+                    // TODO: 사진 사이즈 줄여서 업로드하기; 아직 에러 많음 !!
+                    //
+                    UploadTask uploadTask = imageRef.putFile(imageUri);
+
                     uploadTask.addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception exception) {
