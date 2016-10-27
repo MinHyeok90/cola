@@ -15,6 +15,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
@@ -72,7 +73,7 @@ public class AlbumsActivity extends AppCompatActivity {
         final List thumbnailUrls = new ArrayList();
 
         mGridView = (GridView)findViewById(R.id.gridview);
-        gridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls);
+        gridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls, albumNameList,albumDateList);
         mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
 
         //앨범 클릭시 동작
@@ -169,12 +170,16 @@ public class AlbumsActivity extends AppCompatActivity {
         int layout;
         LayoutInflater layoutInflater;
         List arrayList;     //정보 받아올 list
+        List titleList;     //정보 받아올 list
+        List dateList;     //정보 받아올 list
 
-        public GridAdapter(Context context, int layout, List arrayList){
+        public GridAdapter(Context context, int layout, List arrayList, List nameList, List dateList){
             this.context = context;
             this.layout = layout;
             this.layoutInflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             this.arrayList = arrayList;
+            this.titleList = nameList;
+            this.dateList = dateList;
         }
 
         @Override
@@ -183,9 +188,9 @@ public class AlbumsActivity extends AppCompatActivity {
         }
 
         @Override
-        public Object getItem(int i) {
-            return arrayList.get(i);
-        }
+        public Object getItem(int i) { return arrayList.get(i); }
+        public Object getTitle(int i) { return titleList.get(i); }
+        public Object getDate(int i) { return dateList.get(i); }
 
         @Override
         public long getItemId(int i) {
@@ -206,6 +211,11 @@ public class AlbumsActivity extends AppCompatActivity {
                     .override(256,256)
                     .error(R.drawable.ic_action_name)
                     .into(imageView);
+
+            final TextView titleView = (TextView) view.findViewById(R.id.albumThumbnailTitle);
+            titleView.setText(getTitle(i).toString());
+            final TextView dateView = (TextView) view.findViewById(R.id.albumThumbnailDate);
+            dateView.setText(getDate(i).toString());
 
             return view;
         }
