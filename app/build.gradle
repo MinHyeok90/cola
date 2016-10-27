@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'debug'
             keyPassword 'android'
-            storeFile file('/Users/kyuholee/Documents/Hanium/cola/key/debug.keystore')
+            storeFile file('/Users/Kimminhyeok/AndroidStudioProjects/cola/cola/key/debug.keystore')
             storePassword 'android'
         }
     }
@@ -48,4 +48,3 @@ dependencies {
 }
 
 apply plugin: 'com.google.gms.google-services'
-
