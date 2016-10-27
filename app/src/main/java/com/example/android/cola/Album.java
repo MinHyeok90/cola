@@ -1,9 +1,12 @@
 package com.example.android.cola;
 
+import com.google.firebase.database.Exclude;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import static android.R.attr.author;
 import static android.R.id.list;
 
 /**
@@ -64,5 +67,17 @@ public class Album {
 
     public void setOwner(String owner) {
         this.owner = owner;
+    }
+
+    @Exclude
+    public Map<String, Object> toMap() {
+        HashMap<String, Object> result = new HashMap<>();
+        result.put("created_at", created_at);
+        result.put("filelist", filelist);
+        result.put("isRecording", isRecording);
+        result.put("name", name);
+        result.put("owner", owner);
+
+        return result;
     }
 }

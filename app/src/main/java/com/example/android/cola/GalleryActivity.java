@@ -25,6 +25,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.EditText;
@@ -62,7 +63,16 @@ import java.util.List;
 import java.util.Map;
 
 import static android.R.id.input;
+import static com.google.android.gms.internal.zzaoj.bld;
 
+/*
+ * Created by 김미래 on 2016-09-15
+ *
+ * Modify by 김민혁 on 2016-10-27
+ *  album 제목 변경 : UI, 기능 구현
+ *  album 나가기 : UI 구현
+ *
+ */
 
 public class GalleryActivity extends AppCompatActivity {
     // Write a message to the database
@@ -315,56 +325,78 @@ public class GalleryActivity extends AppCompatActivity {
     }
 
     /* 메뉴 기능 */
+    /*
+     * Modify by 김민혁 on 2016-10-27
+     *  album 제목 변경 : UI, 기능 구현
+     *  album 나가기 : UI 구현
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         AlertDialog.Builder bld;    //대화상자 출력준비.
         switch (item.getItemId()) {
             case R.id.action_edit_album_title:
-                /* 이름변경 버튼 클릭시, 대화상자 출력 */
-                bld = new AlertDialog.Builder(this);
-                bld.setTitle("앨범 이름 변경");
+                /* 이름변경 버튼 클릭시 */
+                /* 대화상자 재료 준비 */
                 final EditText input = new EditText(this);
                 input.setHint("새로운 앨범 제목을 작성해주세요.");
-//                input.setText();
-                bld.setView(input);
+                input.setText(mAlbumName);                          //현재 제목으로 채워두기.
+                input.setSelection(0,input.getText().length());     //전체 선택상태.
+
+                //자동으로 키보드 띄우는 2줄
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+                /* 대화상자 생성 시작 */
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("앨범 이름 변경");
+                bld.setView(input);                                 //EditText 장착
                 bld.setIcon(R.drawable.imoticon1);
                 bld.setPositiveButton("변경",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 변경 시작 */
+                        final DatabaseReference albumRef = myRef.child(mAlbumKey);
+                        mAlbumName = input.getText().toString();
+                        albumRef.child("name").setValue(mAlbumName);
 
+                        // ActionBar에 타이틀 변경
+                        getSupportActionBar().setTitle(mAlbumName);
                     }
                 });
                 bld.setNegativeButton("취소",null);
                 bld.show();
-
                 return true;
+
             case R.id.action_exit_album:
-                /* 나가기 버튼 클릭시, 확인 대화상자 출력 */
-                bld = new AlertDialog.Builder(this);
-                bld.setTitle("앨범에서 나가기");
+                /* 나가기 버튼 클릭시 */
+                /* 대화상자 재료 준비 */
                 final TextView output = new TextView(this);
                 output.setText("이 앨범을 더 이상 보지 않으시겠습니까?");
                 output.setTextSize(24);
                 output.setTextColor(Color.RED);
                 output.setGravity(Gravity.CENTER);
-                bld.setView(output);
+
+                /* 대화상자 생성 시작*/
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("앨범에서 나가기");
+                bld.setView(output);                //TextView 장착
                 bld.setIcon(R.drawable.imoticon1);
                 bld.setPositiveButton("앨범에서 나가기",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 이탈하기 */
-                        DatabaseReference myRef = database.getReference("group");
+                        DatabaseReference groupRef = database.getReference("group");
+                        /* Group 저장 데이터 및 검색 기준 우선 설정 후 구현 */
+//                        groupRef.child(mAlbumKey).child()
                     }
                 });
                 bld.setNegativeButton("취소",null);
                 bld.show();
-
                 return true;
+
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
                 startActivity(intent);
-
                 return true;
 
             case R.id.action_addpicture:
