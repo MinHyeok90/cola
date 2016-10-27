@@ -1,7 +1,10 @@
 package com.example.android.cola;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -26,7 +30,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 /*
  * Created by 김민혁 on 2016-09-15
@@ -53,11 +63,11 @@ import java.util.List;
 public class AlbumsActivity extends AppCompatActivity {
 
     /* Modify by 김민혁 on 2016-10-24 */
-    FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("albumtest");   //DB에서 Albumtest 명칭 변경시, 변경 필요
+    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
+    DatabaseReference mRef = mDatabase.getReference("albumtest");   //DB에서 Albumtest 명칭 변경시, 변경 필요
 
     public GridView mGridView;
-    public GridAdapter gridAdapter;
+    public GridAdapter mGridAdapter;
 
     public final String TAG = "AlbumActivity";
 
@@ -73,8 +83,8 @@ public class AlbumsActivity extends AppCompatActivity {
         final List thumbnailUrls = new ArrayList();
 
         mGridView = (GridView)findViewById(R.id.gridview);
-        gridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls, albumNameList,albumDateList);
-        mGridView.setAdapter(gridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
+        mGridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls, albumNameList,albumDateList);
+        mGridView.setAdapter(mGridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
 
         //앨범 클릭시 동작
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -93,7 +103,7 @@ public class AlbumsActivity extends AppCompatActivity {
         });
 
         //앨범 list 가져오기
-        myRef.addValueEventListener(
+        mRef.addValueEventListener(
             new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
@@ -115,7 +125,7 @@ public class AlbumsActivity extends AppCompatActivity {
                             Log.d(TAG, "albumkey : "+albumKey);
                         }
                     }
-                    gridAdapter.notifyDataSetChanged();
+                    mGridAdapter.notifyDataSetChanged();
                 }
 
                 @Override
@@ -127,6 +137,7 @@ public class AlbumsActivity extends AppCompatActivity {
 
     }
 
+    /* 메뉴 기능 */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -134,16 +145,40 @@ public class AlbumsActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /* 메뉴 선택시 동작. 메뉴의 ID를 case로 구분 */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-//            case R.id.action_settings:
-                // User chose the "Settings" item, show the app settings UI...
-//                return true;
-
             case R.id.action_favorite:
-                // User chose the "Favorite" action, mark the current item
-                // as a favorite...
+                /* 추가 버튼 클릭시, 대화상자 출력 */
+                AlertDialog.Builder bld = new AlertDialog.Builder(this);
+                bld.setTitle("새 앨범 추가");
+                final EditText input = new EditText(this);
+                input.setHint("새로운 앨범 제목을 작성해주세요.");
+//                bld.setView(R.layout.dialog_new_album_layout);    //다른 layout을 사용하는 경우, 해당 xml에 들어있는 EditText의 Text를 읽어오지 못해서 일단 EditText를 코드로 삽입.
+                bld.setView(input);
+                bld.setIcon(R.drawable.imoticon1);
+                bld.setPositiveButton("생성",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        /* 앨범생성 test용 데이터생성 */
+                        Map<String,Object> albumhash = new HashMap<String, Object>();
+                        Map<String,Object> filelisthash = new HashMap<String, Object>();
+                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465");
+                        filelisthash.put("1",c);
+
+                        /* 저장 시작 */
+                        Long date = new Date().getTime();
+//                        setContentView(R.layout.dialog_new_album_layout);
+//                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
+                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),"minhyeok");
+                        DatabaseReference r = mRef.push();
+                        r.setValue(newAlbum);
+                    }
+                });
+                bld.setNegativeButton("취소",null);
+                bld.show();
+
                 return true;
 
             default:
@@ -163,6 +198,7 @@ public class AlbumsActivity extends AppCompatActivity {
      *
      * Modify by 김민혁 on 2016-10-24
      *  GalleryActivity내 GridAdapter로 전체 변경
+     *
      */
     class GridAdapter extends BaseAdapter {
         //리스트 layout을 위한 변수 3개
