@@ -1,5 +1,6 @@
 package com.example.android.cola;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,6 +24,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -38,6 +50,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import static android.R.attr.data;
 /*
  * Created by 김민혁 on 2016-09-15
  *  앨범집 activity.
@@ -58,9 +71,11 @@ import java.util.Set;
  *  DB 연동해서 album list 얻어오기.
  *  받은 정보를 이용해, 갤러리의 첫번째 그림을 출력하도록 변경
  *
+ * Modify by 민경태 on 2016-10-27
+ * 로그아웃 기능 추가
  */
 
-public class AlbumsActivity extends AppCompatActivity {
+public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     /* Modify by 김민혁 on 2016-10-24 */
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
@@ -68,14 +83,12 @@ public class AlbumsActivity extends AppCompatActivity {
 
     public GridView mGridView;
     public GridAdapter mGridAdapter;
-
     public final String TAG = "AlbumActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_albums);
-
         Intent it = getIntent();
         final List albumKeyList = new ArrayList();
         final List albumNameList = new ArrayList();
@@ -142,6 +155,7 @@ public class AlbumsActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_main, menu);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -181,12 +195,49 @@ public class AlbumsActivity extends AppCompatActivity {
 
                 return true;
 
+            case R.id.action_logout:
+
+                signOut();
+                return true;
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
 
         }
+    }
+
+    //로그아웃
+    private void signOut() {
+
+        Intent intent = new Intent(this, LoginActivity.class);
+        FirebaseAuth.getInstance().signOut();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            user.delete()
+                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(AlbumsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(AlbumsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }
+        intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP );
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+        // An unresolvable error has occurred and Google APIs (including Sign-In) will not
+        // be available.
+        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+        Toast.makeText(this, "Google Play Services error.", Toast.LENGTH_SHORT).show();
     }
 
     /*

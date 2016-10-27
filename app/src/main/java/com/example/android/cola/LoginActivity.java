@@ -53,6 +53,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
     // [START declare_auth_listener]
     private FirebaseAuth.AuthStateListener mAuthListener;
     // [END declare_auth_listener]
+
     private Button btnsignup;
     private Button btnlogin;
     private SignInButton btningmail;
@@ -118,6 +119,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
         };
 
         init();
+
     }
 
     void init() {
@@ -141,6 +143,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
         // [START auth_state_listener]
         mAuth.addAuthStateListener(LoginActivity.this.mAuthListener);
         // [END auth_state_listener]
+
         super.onStart();
     }
     // [END on_start_add_listener]
@@ -191,6 +194,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                 ////로그인 성공시, 앨범집으로 이동합니다.
                 Intent intent = new Intent(this, AlbumsActivity.class);
                 startActivity(intent);
+                finish();
             } else {
                 Log.d(TAG, "failed: " + result.toString() + ", " + result.getStatus());
                 // Google Sign In failed, update UI appropriately
@@ -342,11 +346,12 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
         // Firebase sign out
         mAuth.signOut();
 
-        // Google revoke access
-        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+        // Google sign out
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
                     @Override
                     public void onResult(@NonNull Status status) {
+
                         updateUI(null);
                     }
                 });
