@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.disklrucache.DiskLruCache;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -79,6 +80,8 @@ public class GalleryActivity extends AppCompatActivity {
     private String mAlbumName = null;
     private String mStartDate = null;
 
+    final List albumList = new ArrayList();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,8 +101,6 @@ public class GalleryActivity extends AppCompatActivity {
 
         long s = Long.parseLong(mStartDate);
         //Date dates = new Date(s);
-
-        final List albumList = new ArrayList();
 
         mGridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList);
@@ -128,35 +129,36 @@ public class GalleryActivity extends AppCompatActivity {
         /*
         * filelist 변경될 때마다 호출됨
         */
-        mReference.addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        albumList.clear();
-                        filenameList.clear();
-                        for (DataSnapshot child : dataSnapshot.getChildren()) {
-                            if (child != null) {
-                                //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
-                            /*
-                            * db에서 받아온 url, filename 등을 어댑터에 bind된 arrayList에 넣고
-                            * 어댑터에 notifyDataSetChanged 해줌
-                            */
-                                String fileUri = child.child("url").getValue().toString();
-                                String fileName = child.child("filename").getValue().toString();
-                                albumList.add(fileUri);
-                                filenameList.add(fileName);
-                            }
-                        }
-                        gridAdapter.notifyDataSetChanged();
-
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                albumList.clear();
+                filenameList.clear();
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    if (child != null) {
+                        //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
+                        /*
+                        * db에서 받아온 url, filename 등을 어댑터에 bind된 arrayList에 넣고
+                        * 어댑터에 notifyDataSetChanged 해줌
+                        */
+                        String fileUri = child.child("url").getValue().toString();
+                        String fileName = child.child("filename").getValue().toString();
+                        albumList.add(fileUri);
+                        filenameList.add(fileName);
                     }
+                }
+                gridAdapter.notifyDataSetChanged();
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                        // ...
-                    }
-                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                // ...
+            }
+        } ;
+        mReference.addListenerForSingleValueEvent(valueEventListener);
+
     }
 
     @Override
@@ -352,6 +354,7 @@ public class GalleryActivity extends AppCompatActivity {
                         uri = clipData.getItemAt(i).getUri();
                     }
                     final Uri imageUri = uri;
+                    final String imagePath = imageUri.getPath();
                     final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
                     final StorageReference albumReference = storageRef.child(mAlbumKey);
                     StorageReference imageRef = albumReference.child(uri.getLastPathSegment());
@@ -362,9 +365,29 @@ public class GalleryActivity extends AppCompatActivity {
                     /*if(albumReference.getName().equals(albumReference.getName())){
                         continue;
                     }*/
-                    // TODO: 사진 사이즈 줄여서 업로드하기; 아직 에러 많음 !!
+                    // TODO: 사진 사이즈 줄여서 업로드하기; 아직 에러 많음 !! -- OK
                     //
-                    UploadTask uploadTask = imageRef.putFile(imageUri);
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize = 4;
+
+                    Bitmap src = null;
+                    try {
+                        src = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri), null, options);
+                        //i.setImageBitmap(bt);
+                    } catch (Exception e) {
+                    }
+
+                    float ratio = (float)src.getHeight()/(float)src.getWidth();
+                    //Bitmap src = BitmapFactory.decodeFile(imagePath, options);
+                    Bitmap resized = Bitmap.createScaledBitmap(src, 100, (int)(100.0*ratio), true);
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    resized.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] bytes = baos.toByteArray();
+
+                    UploadTask uploadTask = imageRef.putBytes(bytes);
+                    //
+                    //UploadTask uploadTask = imageRef.putFile(imageUri);
 
                     uploadTask.addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -382,6 +405,8 @@ public class GalleryActivity extends AppCompatActivity {
                             r.child("url").setValue(downloadUrl.toString());
                             r.child("filename").setValue(filename);
 
+                            albumList.add(downloadUrl.toString());
+                            gridAdapter.notifyDataSetChanged();
                         }
                     }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
