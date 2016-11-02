@@ -219,17 +219,20 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         FirebaseAuth.getInstance().signOut();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            user.delete()
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(AlbumsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(AlbumsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
-                            }
+            /*user.delete()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(AlbumsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(AlbumsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
                         }
-                    });
+                    }
+                });*/
+        }
+        else{
+            //success
         }
         intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP );
         startActivity(intent);
