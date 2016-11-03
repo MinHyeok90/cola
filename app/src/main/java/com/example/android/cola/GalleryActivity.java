@@ -331,11 +331,18 @@ public class GalleryActivity extends AppCompatActivity {
      * Modify by 김민혁 on 2016-10-27
      *  album 제목 변경 : UI, 기능 구현
      *  album 나가기 : UI 구현
+     *
+     * Modify by 김민혁 on 2016-11-03
+     *  album 참여자들 메뉴추가
      */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         AlertDialog.Builder bld;    //대화상자 출력준비.
         switch (item.getItemId()) {
+
+            case R.id.action_show_participants:
+
+                return true;
             case R.id.action_edit_album_title:
                 /* 이름변경 버튼 클릭시 */
                 /* 대화상자 재료 준비 */

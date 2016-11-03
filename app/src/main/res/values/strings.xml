@@ -48,6 +48,8 @@
 
     <string name="action_settings">Setting</string>
     <string name="action_add_album">앨범추가</string>
+    <string name="action_show_participants">앨범 참여자들 보기</string>
+
     <string name="action_edit_album">제목 변경</string>
     <string name="action_exit_album">이 앨범에서 나가기</string>
     <string name="action_invite">Invite</string>
