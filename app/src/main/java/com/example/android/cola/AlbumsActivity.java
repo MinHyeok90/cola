@@ -75,6 +75,14 @@ import static android.R.attr.data;
  *
  * Modify by 민경태 on 2016-10-27
  * 로그아웃 기능 추가
+ *
+ * Modify by 김미래 on 2016-11-02
+ * 로그아웃 기능 구현
+ *
+ * Modify by 김민혁 on 2016-11-03
+ * 새 앨범 생성시 owner 올바르게 지정
+ *
+ *
  */
 
 public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
@@ -82,6 +90,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     /* Modify by 김민혁 on 2016-10-24 */
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     DatabaseReference mRef = mDatabase.getReference("albumtest");   //DB에서 Albumtest 명칭 변경시, 변경 필요
+    FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public GridView mGridView;
     public GridAdapter mGridAdapter;
@@ -91,7 +100,9 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_albums);
+
         Intent it = getIntent();
+
         final List albumKeyList = new ArrayList();
         final List albumNameList = new ArrayList();
         final List albumDateList = new ArrayList();
@@ -187,7 +198,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         Long date = new Date().getTime();
 //                        setContentView(R.layout.dialog_new_album_layout);
 //                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),"minhyeok");
+                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid());
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
                     }
