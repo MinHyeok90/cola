@@ -75,6 +75,9 @@ import static android.R.attr.data;
  *
  * Modify by 민경태 on 2016-10-27
  * 로그아웃 기능 추가
+ *
+ * Modified by 김미래 on 2016. 11. 04..
+ *  ColaImage 멤버 owner 추가 사항 반영
  */
 
 public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
@@ -180,7 +183,9 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         /* 앨범생성 test용 데이터생성 */
                         Map<String,Object> albumhash = new HashMap<String, Object>();
                         Map<String,Object> filelisthash = new HashMap<String, Object>();
-                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465");
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        String uid = user.getUid();
+                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465", user.getUid());
                         filelisthash.put("1",c);
 
                         /* 저장 시작 */
