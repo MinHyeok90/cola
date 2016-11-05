@@ -88,6 +88,7 @@ public class ImagePickActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_pick);
         mContext = this;
         mStartDate = getIntent().getStringExtra("startDate");
+
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle("사진 선택");
 
