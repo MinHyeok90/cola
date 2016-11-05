@@ -37,6 +37,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.disklrucache.DiskLruCache;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -73,6 +75,9 @@ import static com.google.android.gms.internal.zzaoj.bld;
  *  album 제목 변경 : UI, 기능 구현
  *  album 나가기 : UI 구현
  *
+ * Modified by 김미래 on 2016-11-04
+ *  사진 업로드 시 owner 정보도 업로드.
+ *  TODO: owner 정보 화면에 출력될 수 있게 할 것.
  */
 
 public class GalleryActivity extends AppCompatActivity {
@@ -89,6 +94,7 @@ public class GalleryActivity extends AppCompatActivity {
     public GridAdapter gridAdapter;
     public Activity activity = this;
     public final int REQ_CODE_PICK_PICTURE = 335;
+    public FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public final long start = new Date((2016 - 1900), 9, 20, 0, 0, 0).getTime();
     private final List filenameList = new ArrayList();
@@ -191,7 +197,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         switch (v.getId()) {
 
-            case R.id.loadButton:
+            /*case R.id.loadButton:
                 //String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
                 final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
                 final StorageReference albumReference = storageRef.child(mAlbumKey);
@@ -224,7 +230,7 @@ public class GalleryActivity extends AppCompatActivity {
                         Bitmap resized = Bitmap.createScaledBitmap(src, 256, 256, true);
 
                         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        resized.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+                        resized.compress(Bitmap.CompressFormat.PNG, 0 *//*ignored for PNG*//*, bos);
                         byte[] bitmapData = bos.toByteArray();
                         InputStream bs = new ByteArrayInputStream(bitmapData);
 
@@ -263,7 +269,7 @@ public class GalleryActivity extends AppCompatActivity {
                         });
                     }
                 }
-                break;
+                break;*/
         }
     }
 
@@ -409,18 +415,17 @@ public class GalleryActivity extends AppCompatActivity {
                 return true;
 
             case R.id.action_addpicture:
-                /*
                 Intent intent2 = new Intent(this, ImagePickActivity.class);
-                startActivity(intent2);
-                */
-                Intent i = new Intent(Intent.ACTION_PICK);
+                intent2.putExtra("startDate", mStartDate);
+                startActivityForResult(intent2, REQ_CODE_PICK_PICTURE);
+                /*Intent i = new Intent(Intent.ACTION_PICK);
                 i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 i.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
                 i.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI); // images on the SD card.
 
                 // 결과를 리턴하는 Activity 호출
                 startActivityForResult(i, REQ_CODE_PICK_PICTURE);
-
+*/
                 return true;
 
             default:
@@ -456,11 +461,6 @@ public class GalleryActivity extends AppCompatActivity {
                     final int count = i + 1;
                     final int totalCount = total;
 
-                    /*if(albumReference.getName().equals(albumReference.getName())){
-                        continue;
-                    }*/
-                    // TODO: 사진 사이즈 줄여서 업로드하기; 아직 에러 많음 !! -- OK
-                    //
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inSampleSize = 4;
 
@@ -498,6 +498,7 @@ public class GalleryActivity extends AppCompatActivity {
                             String filename = taskSnapshot.getMetadata().getName();
                             r.child("url").setValue(downloadUrl.toString());
                             r.child("filename").setValue(filename);
+                            r.child("owner").setValue(mUser.getUid());
 
                             albumList.add(downloadUrl.toString());
                             gridAdapter.notifyDataSetChanged();

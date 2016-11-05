@@ -82,7 +82,11 @@ import static android.R.attr.data;
  * Modify by 김민혁 on 2016-11-03
  * 새 앨범 생성시 owner 올바르게 지정
  *
+ * Modified by 김미래 on 2016. 11. 04.
+ *  ColaImage 멤버 owner 추가 사항 반영
  *
+ * Modified by 김민혁 on 2016. 11. 05.
+ *  git merge하며 owner기능 구현 위한 mUser 통합
  */
 
 public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
@@ -191,7 +195,8 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         /* 앨범생성 test용 데이터생성 */
                         Map<String,Object> albumhash = new HashMap<String, Object>();
                         Map<String,Object> filelisthash = new HashMap<String, Object>();
-                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465");
+                        String uid = mUser.getUid();
+                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465", mUser.getUid());
                         filelisthash.put("1",c);
 
                         /* 저장 시작 */

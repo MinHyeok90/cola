@@ -55,6 +55,7 @@
     <string name="action_invite">Invite</string>
     <string name="action_addpicture">Add Picture</string>
     <string name="add_new_member">Add new member</string>
+    <string name="action_complete_select">완료</string>
     <string name="db_album">albumtest</string>
 
     <string name="action_logout">Logout</string>
