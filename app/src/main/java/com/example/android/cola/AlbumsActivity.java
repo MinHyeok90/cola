@@ -43,13 +43,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 import static android.R.attr.data;
 /*
@@ -69,11 +66,27 @@ import static android.R.attr.data;
  * Modify by 김민혁 on 2016-10-24
  *  앨범 선택하면 GalleryActivity로 연결(DB 연동X).
  *  DB연동을 위해 클래스 ImageAdapter_main를 inner class로 변경
- *  DB 연동해서 album list 얻어오기.
- *  받은 정보를 이용해, 갤러리의 첫번째 그림을 출력하도록 변경
+ *  받은 정보를 이용해, 갤러리의 첫번째 그림을 썸네일로 출력함
+ *
+ * Modify by 김민혁 on 2016-10-27
+ *  album 제목, 날짜 출력.
+ *  제목 지정해서 새로운 앨범 생성기능 추가.
+ *  update, delete 기능 추가하려다가 갤러리에서 추가하기로 함. -> 관련코드 주석처리.
  *
  * Modify by 민경태 on 2016-10-27
  * 로그아웃 기능 추가
+ *
+ * Modify by 김미래 on 2016-11-02
+ * 로그아웃 기능 구현
+ *
+ * Modify by 김민혁 on 2016-11-03
+ * 새 앨범 생성시 owner 올바르게 지정
+ *
+ * Modified by 김미래 on 2016. 11. 04.
+ *  ColaImage 멤버 owner 추가 사항 반영
+ *
+ * Modified by 김민혁 on 2016. 11. 05.
+ *  git merge하며 owner기능 구현 위한 mUser 통합
  */
 
 public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
@@ -81,6 +94,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     /* Modify by 김민혁 on 2016-10-24 */
     FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
     DatabaseReference mRef = mDatabase.getReference("albumtest");   //DB에서 Albumtest 명칭 변경시, 변경 필요
+    FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public GridView mGridView;
     public GridAdapter mGridAdapter;
@@ -90,7 +104,9 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_albums);
+
         Intent it = getIntent();
+
         final List albumKeyList = new ArrayList();
         final List albumNameList = new ArrayList();
         final List albumDateList = new ArrayList();
@@ -155,7 +171,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.menu_main, menu);
+        inflater.inflate(R.menu.menu_album, menu);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         return super.onCreateOptionsMenu(menu);
     }
@@ -164,7 +180,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.action_favorite:
+            case R.id.action_add_album:
                 /* 추가 버튼 클릭시, 대화상자 출력 */
                 AlertDialog.Builder bld = new AlertDialog.Builder(this);
                 bld.setTitle("새 앨범 추가");
@@ -179,14 +195,15 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         /* 앨범생성 test용 데이터생성 */
                         Map<String,Object> albumhash = new HashMap<String, Object>();
                         Map<String,Object> filelisthash = new HashMap<String, Object>();
-                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465");
+                        String uid = mUser.getUid();
+                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465", mUser.getUid());
                         filelisthash.put("1",c);
 
                         /* 저장 시작 */
                         Long date = new Date().getTime();
 //                        setContentView(R.layout.dialog_new_album_layout);
 //                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),"minhyeok");
+                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid());
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
                     }
@@ -195,6 +212,9 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 bld.show();
 
                 return true;
+
+//            case R.id.action_edit_album:
+//                return true;
 
             case R.id.action_logout:
 
@@ -215,17 +235,20 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         FirebaseAuth.getInstance().signOut();
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
-            user.delete()
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(AlbumsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Toast.makeText(AlbumsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
-                            }
+            /*user.delete()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(AlbumsActivity.this, "Your profile is deleted:( Create a account now!", Toast.LENGTH_SHORT).show();
+                        } else {
+                            Toast.makeText(AlbumsActivity.this, "Failed to delete your account!", Toast.LENGTH_SHORT).show();
                         }
-                    });
+                    }
+                });*/
+        }
+        else{
+            //success
         }
         intent.setFlags( Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP );
         startActivity(intent);

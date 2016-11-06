@@ -47,13 +47,18 @@
     <string name="email_fmt">Email: %s</string>
 
     <string name="action_settings">Setting</string>
-    <string name="action_add_album">Add Album</string>
+    <string name="action_add_album">앨범추가</string>
+    <string name="action_show_participants">앨범 참여자들 보기</string>
+
+    <string name="action_edit_album">제목 변경</string>
+    <string name="action_exit_album">이 앨범에서 나가기</string>
     <string name="action_invite">Invite</string>
     <string name="action_addpicture">Add Picture</string>
     <string name="add_new_member">Add new member</string>
+    <string name="action_complete_select">완료</string>
     <string name="db_album">albumtest</string>
 
     <string name="action_logout">Logout</string>
 
-    <string name="dialog_add_album">새로운 앨범 이름을 작성해 주세요.</string>
+
 </resources>

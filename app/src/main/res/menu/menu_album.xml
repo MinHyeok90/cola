@@ -3,18 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".AlbumsActivity">
     <!-- "Mark Favorite", should appear as action button if possible -->
+    <!--<item-->
+        <!--android:id="@+id/action_edit_album"-->
+        <!--android:title="@string/action_edit_album"-->
+        <!--app:showAsAction="ifRoom"/>-->
     <item
-        android:id="@+id/action_favorite"
+        android:id="@+id/action_add_album"
         android:title="@string/action_add_album"
         app:showAsAction="ifRoom"/>
     <item
         android:id="@+id/action_logout"
         android:title="로그아웃"
         app:showAsAction="always"/>
-
-    <!-- Settings, should always be in the overflow -->
-    <!--<item android:id="@+id/action_settings"-->
-        <!--android:title="@string/action_settings"-->
-        <!--app:showAsAction="never"/>-->
 
 </menu>

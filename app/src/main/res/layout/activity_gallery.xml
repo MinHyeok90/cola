@@ -16,18 +16,6 @@
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="사진 모두 불러오기"
-        android:id="@+id/loadButton"
-        android:layout_below="@id/progress"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="8dp"
-        android:onClick="onClick"/>
-
-
     <GridView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -37,7 +25,7 @@
         android:numColumns="3"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        android:layout_below="@id/loadButton"/>
+        android:layout_below="@id/progress"/>
 
 
 </RelativeLayout>

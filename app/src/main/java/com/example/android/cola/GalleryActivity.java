@@ -3,33 +3,42 @@ package com.example.android.cola;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.disklrucache.DiskLruCache;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -39,6 +48,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
+
+import org.w3c.dom.Text;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,8 +61,24 @@ import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import static android.R.id.input;
+import static com.google.android.gms.internal.zzaoj.bld;
+
+/*
+ * Created by 김미래 on 2016-09-15
+ *
+ * Modify by 김민혁 on 2016-10-27
+ *  album 제목 변경 : UI, 기능 구현
+ *  album 나가기 : UI 구현
+ *
+ * Modified by 김미래 on 2016-11-04
+ *  사진 업로드 시 owner 정보도 업로드.
+ *  TODO: owner 정보 화면에 출력될 수 있게 할 것.
+ */
 
 public class GalleryActivity extends AppCompatActivity {
     // Write a message to the database
@@ -67,6 +94,7 @@ public class GalleryActivity extends AppCompatActivity {
     public GridAdapter gridAdapter;
     public Activity activity = this;
     public final int REQ_CODE_PICK_PICTURE = 335;
+    public FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public final long start = new Date((2016 - 1900), 9, 20, 0, 0, 0).getTime();
     private final List filenameList = new ArrayList();
@@ -78,6 +106,8 @@ public class GalleryActivity extends AppCompatActivity {
     private String mAlbumKey  = null;
     private String mAlbumName = null;
     private String mStartDate = null;
+
+    final List albumList = new ArrayList();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,8 +128,6 @@ public class GalleryActivity extends AppCompatActivity {
 
         long s = Long.parseLong(mStartDate);
         //Date dates = new Date(s);
-
-        final List albumList = new ArrayList();
 
         mGridView = (GridView) findViewById(R.id.gridView);
         gridAdapter = new GridAdapter(getApplicationContext(), R.layout.gallerygriditem, albumList);
@@ -128,35 +156,36 @@ public class GalleryActivity extends AppCompatActivity {
         /*
         * filelist 변경될 때마다 호출됨
         */
-        mReference.addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        albumList.clear();
-                        filenameList.clear();
-                        for (DataSnapshot child : dataSnapshot.getChildren()) {
-                            if (child != null) {
-                                //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
-                            /*
-                            * db에서 받아온 url, filename 등을 어댑터에 bind된 arrayList에 넣고
-                            * 어댑터에 notifyDataSetChanged 해줌
-                            */
-                                String fileUri = child.child("url").getValue().toString();
-                                String fileName = child.child("filename").getValue().toString();
-                                albumList.add(fileUri);
-                                filenameList.add(fileName);
-                            }
-                        }
-                        gridAdapter.notifyDataSetChanged();
-
+        ValueEventListener valueEventListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                albumList.clear();
+                filenameList.clear();
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    if (child != null) {
+                        //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
+                        /*
+                        * db에서 받아온 url, filename 등을 어댑터에 bind된 arrayList에 넣고
+                        * 어댑터에 notifyDataSetChanged 해줌
+                        */
+                        String fileUri = child.child("url").getValue().toString();
+                        String fileName = child.child("filename").getValue().toString();
+                        albumList.add(fileUri);
+                        filenameList.add(fileName);
                     }
+                }
+                gridAdapter.notifyDataSetChanged();
 
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                        // ...
-                    }
-                });
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                // ...
+            }
+        } ;
+        mReference.addListenerForSingleValueEvent(valueEventListener);
+
     }
 
     @Override
@@ -168,7 +197,7 @@ public class GalleryActivity extends AppCompatActivity {
 
         switch (v.getId()) {
 
-            case R.id.loadButton:
+            /*case R.id.loadButton:
                 //String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
                 final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
                 final StorageReference albumReference = storageRef.child(mAlbumKey);
@@ -201,7 +230,7 @@ public class GalleryActivity extends AppCompatActivity {
                         Bitmap resized = Bitmap.createScaledBitmap(src, 256, 256, true);
 
                         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        resized.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+                        resized.compress(Bitmap.CompressFormat.PNG, 0 *//*ignored for PNG*//*, bos);
                         byte[] bitmapData = bos.toByteArray();
                         InputStream bs = new ByteArrayInputStream(bitmapData);
 
@@ -240,7 +269,7 @@ public class GalleryActivity extends AppCompatActivity {
                         });
                     }
                 }
-                break;
+                break;*/
         }
     }
 
@@ -303,28 +332,100 @@ public class GalleryActivity extends AppCompatActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
+    /* 메뉴 기능 */
+    /*
+     * Modify by 김민혁 on 2016-10-27
+     *  album 제목 변경 : UI, 기능 구현
+     *  album 나가기 : UI 구현
+     *
+     * Modify by 김민혁 on 2016-11-03
+     *  album 참여자들 메뉴추가
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        AlertDialog.Builder bld;    //대화상자 출력준비.
         switch (item.getItemId()) {
+
+            case R.id.action_show_participants:
+
+                return true;
+            case R.id.action_edit_album_title:
+                /* 이름변경 버튼 클릭시 */
+                /* 대화상자 재료 준비 */
+                final EditText input = new EditText(this);
+                input.setHint("새로운 앨범 제목을 작성해주세요.");
+                input.setText(mAlbumName);                          //현재 제목으로 채워두기.
+                input.setSelection(0,input.getText().length());     //전체 선택상태.
+
+                //자동으로 키보드 띄우는 2줄
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+                /* 대화상자 생성 시작 */
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("앨범 이름 변경");
+                bld.setView(input);                                 //EditText 장착
+                bld.setIcon(R.drawable.imoticon1);
+                bld.setPositiveButton("변경",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        /* 변경 시작 */
+                        final DatabaseReference albumRef = myRef.child(mAlbumKey);
+                        mAlbumName = input.getText().toString();
+                        albumRef.child("name").setValue(mAlbumName);
+
+                        // ActionBar에 타이틀 변경
+                        getSupportActionBar().setTitle(mAlbumName);
+                    }
+                });
+                bld.setNegativeButton("취소",null);
+                bld.show();
+                return true;
+
+            case R.id.action_exit_album:
+                /* 나가기 버튼 클릭시 */
+                /* 대화상자 재료 준비 */
+                final TextView output = new TextView(this);
+                output.setText("이 앨범을 더 이상 보지 않으시겠습니까?");
+                output.setTextSize(24);
+                output.setTextColor(Color.RED);
+                output.setGravity(Gravity.CENTER);
+
+                /* 대화상자 생성 시작*/
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("앨범에서 나가기");
+                bld.setView(output);                //TextView 장착
+                bld.setIcon(R.drawable.imoticon1);
+                bld.setPositiveButton("앨범에서 나가기",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        /* 이탈하기 */
+                        DatabaseReference groupRef = database.getReference("group");
+                        /* Group 저장 데이터 및 검색 기준 우선 설정 후 구현 */
+//                        groupRef.child(mAlbumKey).child()
+                    }
+                });
+                bld.setNegativeButton("취소",null);
+                bld.show();
+                return true;
+
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
                 startActivity(intent);
-
                 return true;
 
             case R.id.action_addpicture:
-                /*
                 Intent intent2 = new Intent(this, ImagePickActivity.class);
-                startActivity(intent2);
-                */
-                Intent i = new Intent(Intent.ACTION_PICK);
+                intent2.putExtra("startDate", mStartDate);
+                startActivityForResult(intent2, REQ_CODE_PICK_PICTURE);
+                /*Intent i = new Intent(Intent.ACTION_PICK);
                 i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 i.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
                 i.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI); // images on the SD card.
 
                 // 결과를 리턴하는 Activity 호출
                 startActivityForResult(i, REQ_CODE_PICK_PICTURE);
-
+*/
                 return true;
 
             default:
@@ -352,6 +453,7 @@ public class GalleryActivity extends AppCompatActivity {
                         uri = clipData.getItemAt(i).getUri();
                     }
                     final Uri imageUri = uri;
+                    final String imagePath = imageUri.getPath();
                     final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
                     final StorageReference albumReference = storageRef.child(mAlbumKey);
                     StorageReference imageRef = albumReference.child(uri.getLastPathSegment());
@@ -359,12 +461,27 @@ public class GalleryActivity extends AppCompatActivity {
                     final int count = i + 1;
                     final int totalCount = total;
 
-                    /*if(albumReference.getName().equals(albumReference.getName())){
-                        continue;
-                    }*/
-                    // TODO: 사진 사이즈 줄여서 업로드하기; 아직 에러 많음 !!
+                    BitmapFactory.Options options = new BitmapFactory.Options();
+                    options.inSampleSize = 4;
+
+                    Bitmap src = null;
+                    try {
+                        src = BitmapFactory.decodeStream(getContentResolver().openInputStream(imageUri), null, options);
+                        //i.setImageBitmap(bt);
+                    } catch (Exception e) {
+                    }
+
+                    float ratio = (float)src.getHeight()/(float)src.getWidth();
+                    //Bitmap src = BitmapFactory.decodeFile(imagePath, options);
+                    Bitmap resized = Bitmap.createScaledBitmap(src, 100, (int)(100.0*ratio), true);
+
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    resized.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+                    byte[] bytes = baos.toByteArray();
+
+                    UploadTask uploadTask = imageRef.putBytes(bytes);
                     //
-                    UploadTask uploadTask = imageRef.putFile(imageUri);
+                    //UploadTask uploadTask = imageRef.putFile(imageUri);
 
                     uploadTask.addOnFailureListener(new OnFailureListener() {
                         @Override
@@ -381,7 +498,10 @@ public class GalleryActivity extends AppCompatActivity {
                             String filename = taskSnapshot.getMetadata().getName();
                             r.child("url").setValue(downloadUrl.toString());
                             r.child("filename").setValue(filename);
+                            r.child("owner").setValue(mUser.getUid());
 
+                            albumList.add(downloadUrl.toString());
+                            gridAdapter.notifyDataSetChanged();
                         }
                     }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
                         @Override
