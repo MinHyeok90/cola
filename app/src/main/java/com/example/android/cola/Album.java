@@ -20,13 +20,15 @@ public class Album {
     String isRecording;
     String name;
     String owner;
+    String participants;
 
-    public Album(String created_at, Map<String, Object> filelist, String isRecording, String name, String owner) {
+    public Album(String created_at, Map<String, Object> filelist, String isRecording, String name, String owner,String participants) {
         this.created_at = created_at;
         this.filelist = filelist;
         this.isRecording = isRecording;
         this.name = name;
         this.owner = owner;
+        this.participants = participants;
     }
 
     public String getCreated_at() {
@@ -69,6 +71,14 @@ public class Album {
         this.owner = owner;
     }
 
+    public String getParticipants() {
+        return participants;
+    }
+
+    public void setParticipants(String participants) {
+        this.participants = participants;
+    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -77,6 +87,7 @@ public class Album {
         result.put("isRecording", isRecording);
         result.put("name", name);
         result.put("owner", owner);
+        result.put("participants", owner);
 
         return result;
     }

@@ -203,7 +203,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         Long date = new Date().getTime();
 //                        setContentView(R.layout.dialog_new_album_layout);
 //                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid());
+                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid(),"NULL");
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
                     }

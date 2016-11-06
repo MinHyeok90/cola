@@ -328,7 +328,7 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_gallery, menu);
-        inflater.inflate(R.menu.menu_addpicture, menu);
+        //inflater.inflate(R.menu.menu_addpicture, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -411,6 +411,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
+                intent.putExtra("albumkey",mAlbumKey);
                 startActivity(intent);
                 return true;
 
