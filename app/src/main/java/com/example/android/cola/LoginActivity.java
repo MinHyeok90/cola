@@ -31,6 +31,8 @@ import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.Serializable;
+
 /**
  * Created by Krivnon on 2016-09-05.
  * <p>
@@ -202,6 +204,8 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
             }
         }
     }
+
+
     // [END onactivityresult]
 
     // [START auth_with_google]
@@ -310,6 +314,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
                         } else {
                             ////로그인 성공시, 앨범집으로 이동합니다.
                             Intent intent = new Intent(LoginActivity.this, AlbumsActivity.class);
+
                             startActivity(intent);
 
                         }

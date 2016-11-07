@@ -28,6 +28,8 @@ import java.util.ArrayList;
 
 /**
  * Created by kyuholee on 2016. 9. 6..
+ * Modified by 경태 on 2016. 11.6
+ *   앨범에 참여자 추가
  */
 public class AddNewMemberActivity extends BaseActivity{
     private static final String TAG = "AllMembersActivity";
@@ -90,7 +92,7 @@ public class AddNewMemberActivity extends BaseActivity{
             // parent는 AdapterView의 속성의 모두 사용 할 수 있다.
             User user = (User) parent.getAdapter().getItem(position);
             Toast.makeText(getApplicationContext(),"등록"+user.getmEmail(), Toast.LENGTH_SHORT).show();
-            DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").push();
+            DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").child(user.getmUid());
             r.setValue(user.getmEmail());
 
         }

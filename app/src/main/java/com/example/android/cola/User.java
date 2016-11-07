@@ -1,9 +1,11 @@
 package com.example.android.cola;
 
+import java.io.Serializable;
+
 /**
  * Created by Krivnon on 2016-09-25.
  */
-class User {
+class User implements Serializable{
     private String mUid;
     private String mEmail;
     private String mUserName;

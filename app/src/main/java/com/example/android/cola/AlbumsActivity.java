@@ -17,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -35,6 +36,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -87,35 +89,60 @@ import static android.R.attr.data;
  *
  * Modified by 김민혁 on 2016. 11. 05.
  *  git merge하며 owner기능 구현 위한 mUser 통합
+ *
+ * Modified by 민경태 on 2016-11-06
+ * 자신이 참여한 앨범인지 확인 후 앨범들을 보여줌.
+ * 자신의 앨범만 볼 수 있음
  */
 
 public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     /* Modify by 김민혁 on 2016-10-24 */
-    FirebaseDatabase mDatabase = FirebaseDatabase.getInstance();
-    DatabaseReference mRef = mDatabase.getReference("albumtest");   //DB에서 Albumtest 명칭 변경시, 변경 필요
-    FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
+    FirebaseDatabase mDatabase;
+    DatabaseReference mRef;  //DB에서 Albumtest 명칭 변경시, 변경 필요
+    FirebaseUser mUser;
 
     public GridView mGridView;
     public GridAdapter mGridAdapter;
     public final String TAG = "AlbumActivity";
+    private Boolean isMine = false;
+    private Button btnrefresh;
+
+
+    final List albumKeyList = new ArrayList();
+    final List albumNameList = new ArrayList();
+    final List albumDateList = new ArrayList();
+    final List thumbnailUrls = new ArrayList();
+
+    private String albumKey;
+    private String albumName;
+    private String albumDate;
+    private String albumImgUrl;
+
+    private String albumParty;
+    private String ownUid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_albums);
-
         Intent it = getIntent();
+        try {
+            mUser = FirebaseAuth.getInstance().getCurrentUser();
+            Log.d(TAG, "mUser : "+mUser.getEmail());
+        } catch (Exception e) {
+            if(mUser!=null)
+            Log.d(TAG, "mUser : null"+mUser.getEmail());
 
-        final List albumKeyList = new ArrayList();
-        final List albumNameList = new ArrayList();
-        final List albumDateList = new ArrayList();
-        final List thumbnailUrls = new ArrayList();
+        }
+        mDatabase = FirebaseDatabase.getInstance();
+        mRef = mDatabase.getReference("albumtest");
 
         mGridView = (GridView)findViewById(R.id.gridview);
         mGridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls, albumNameList,albumDateList);
         mGridView.setAdapter(mGridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
 
+        btnrefresh = (Button)findViewById(R.id.album_btrefresh);
         //앨범 클릭시 동작
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -132,6 +159,11 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             }
         });
 
+        getAlbumList();
+    }
+
+    public void getAlbumList()
+    {
         //앨범 list 가져오기
         mRef.addValueEventListener(
             new ValueEventListener() {
@@ -141,18 +173,42 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     albumNameList.clear();
                     albumDateList.clear();
                     thumbnailUrls.clear();
+
+                    //FireBase의 앨범 추가
+                    //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
+                    //앨범 참여자 중에 자신이 있는지 비교한 후 add함
+                    //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
+                    isMine = false;
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
-                        //String idx = child.getKey().toString();
-                        if(child != null) {
-                            String albumKey = child.getKey().toString();
-                            String albumName = child.child("name").getValue().toString();
-                            String albumDate = child.child("created_at").getValue().toString();
-                            String albumImgUrl = child.child("filelist").child("1").child("url").getValue().toString();
-                            albumKeyList.add(albumKey);
-                            albumNameList.add(albumName);
-                            albumDateList.add(albumDate);
-                            thumbnailUrls.add(albumImgUrl);
-                            Log.d(TAG, "albumkey : "+albumKey);
+                        albumParty = "";
+                        if (child != null) {
+                            albumKey = child.getKey().toString();
+                            albumName = child.child("name").getValue().toString();
+                            albumDate = child.child("created_at").getValue().toString();
+                            albumImgUrl = child.child("filelist").child("1").child("url").getValue().toString();
+
+                            if(mUser==null){ownUid= "";}
+                            else{
+                                ownUid = mUser.getUid();
+                                albumParty = "";
+                                if (child.child("participants").child(mUser.getUid()).getValue() != null){
+                                    albumParty = child.child("participants").child(ownUid).getValue().toString();
+                                    Log.w(TAG,"key : "+albumParty);
+                                }
+                                if (child.child("participants").child(mUser.getUid()).getKey() != null) {
+                                    Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
+                                    if (albumParty.equals(mUser.getEmail().toString())) {
+                                        Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
+                                        Log.w(TAG, "key : " + albumParty);
+                                        albumKeyList.add(albumKey);
+                                        albumNameList.add(albumName);
+                                        albumDateList.add(albumDate);
+                                        thumbnailUrls.add(albumImgUrl);
+                                        Log.w(TAG, "albumName : " + albumName);
+                                    }
+                                }
+                            }
+
                         }
                     }
                     mGridAdapter.notifyDataSetChanged();
@@ -160,11 +216,22 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
                 @Override
                 public void onCancelled(DatabaseError databaseError) {
-                    Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    // ...
+                    Log.w(TAG,"mRef.addValueEventListener: onCancelled");
                 }
-            });
+            }
+        );
+    }
 
+    public void onClick(View view)
+    {
+
+        isMine = false;
+        if(view.getId() == R.id.album_btrefresh)
+        {
+            Log.d(TAG, "동기화버튼 클릭");
+            mUser = FirebaseAuth.getInstance().getCurrentUser();
+            getAlbumList();
+        }
     }
 
     /* 메뉴 기능 */
@@ -203,9 +270,10 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         Long date = new Date().getTime();
 //                        setContentView(R.layout.dialog_new_album_layout);
 //                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid(),"NULL");
+                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid());
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
+                        r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
                     }
                 });
                 bld.setNegativeButton("취소",null);
