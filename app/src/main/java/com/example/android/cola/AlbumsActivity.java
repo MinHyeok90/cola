@@ -65,34 +65,38 @@ import static android.R.attr.data;
  *  class명 충돌로 인해 이름변경 : ImageAdapter -> ImageAdapter_main
  *  액션바에 메뉴 생성 + 코드 정리.
  *
- * Modify by 김민혁 on 2016-10-24
+ * Modifyed by 김민혁 on 2016-10-24
  *  앨범 선택하면 GalleryActivity로 연결(DB 연동X).
  *  DB연동을 위해 클래스 ImageAdapter_main를 inner class로 변경
  *  받은 정보를 이용해, 갤러리의 첫번째 그림을 썸네일로 출력함
  *
- * Modify by 김민혁 on 2016-10-27
+ * Modifyed by 김민혁 on 2016-10-27
  *  album 제목, 날짜 출력.
  *  제목 지정해서 새로운 앨범 생성기능 추가.
  *  update, delete 기능 추가하려다가 갤러리에서 추가하기로 함. -> 관련코드 주석처리.
  *
- * Modify by 민경태 on 2016-10-27
+ * Modifyed by 민경태 on 2016-10-27
  * 로그아웃 기능 추가
  *
- * Modify by 김미래 on 2016-11-02
+ * Modifyed by 김미래 on 2016-11-02
  * 로그아웃 기능 구현
  *
- * Modify by 김민혁 on 2016-11-03
+ * Modifyed by 김민혁 on 2016-11-03
  * 새 앨범 생성시 owner 올바르게 지정
  *
- * Modified by 김미래 on 2016. 11. 04.
+ * Modified by 김미래 on 2016-11-04
  *  ColaImage 멤버 owner 추가 사항 반영
  *
- * Modified by 김민혁 on 2016. 11. 05.
+ * Modified by 김민혁 on 2016-11-05
  *  git merge하며 owner기능 구현 위한 mUser 통합
  *
  * Modified by 민경태 on 2016-11-06
  * 자신이 참여한 앨범인지 확인 후 앨범들을 보여줌.
  * 자신의 앨범만 볼 수 있음
+ *
+ * Modified by 김민혁 on 2016-11-08
+ *  처음으로 앨범 생성 시, 임시 파일을 넣지 말고 아직 이미지 없음을 출력.
+ *
  */
 
 public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnConnectionFailedListener {
@@ -185,7 +189,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                             albumKey = child.getKey().toString();
                             albumName = child.child("name").getValue().toString();
                             albumDate = child.child("created_at").getValue().toString();
-                            albumImgUrl = child.child("filelist").child("1").child("url").getValue().toString();
+                            albumImgUrl = child.child("thumbnail").getValue().toString();
 
                             if(mUser==null){ownUid= "";}
                             else{
@@ -270,7 +274,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         Long date = new Date().getTime();
 //                        setContentView(R.layout.dialog_new_album_layout);
 //                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),filelisthash,"True",input.getText().toString(),mUser.getUid());
+                        Album newAlbum = new Album(date.toString(),null,"True",input.getText().toString(),mUser.getUid(),null);
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
                         r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
