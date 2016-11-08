@@ -111,6 +111,8 @@ public class GalleryActivity extends AppCompatActivity {
 
     final List albumList = new ArrayList();
 
+    //0이면 지워져야 하므로
+    private int partyCount = -1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -403,10 +405,24 @@ public class GalleryActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 이탈하기 */
-                        DatabaseReference groupRef = myRef.child(mAlbumKey).child("participants").getRef();
-                        groupRef.child(mUser.getUid()).removeValue();
-                        //mUser.getEmail()
-                        //mUser.getUid()
+                        myRef.child(mAlbumKey).child("participants").child(mUser.getUid()).removeValue();
+                        myRef.child(mAlbumKey).child("participants").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                partyCount = (int)dataSnapshot.getChildrenCount();
+                                Log.i(TAG,"data0수"+partyCount);
+                                if(partyCount == 0)
+                                {
+                                    myRef.child(mAlbumKey).removeValue();
+                                }
+
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
                         Intent intent = new Intent(activity, AlbumsActivity.class);
                         startActivity(intent);
                         /* Group 저장 데이터 및 검색 기준 우선 설정 후 구현 */
