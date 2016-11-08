@@ -125,6 +125,8 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+       //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         setContentView(R.layout.activity_albums);
         Intent it = getIntent();
         try {
@@ -239,7 +241,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_album, menu);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         return super.onCreateOptionsMenu(menu);
     }
 

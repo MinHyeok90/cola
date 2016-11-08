@@ -9,11 +9,13 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -112,6 +114,7 @@ public class GalleryActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_gallery);
 
         Intent intent = getIntent();
@@ -328,7 +331,7 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_gallery, menu);
-        //inflater.inflate(R.menu.menu_addpicture, menu);
+        inflater.inflate(R.menu.menu_addpicture, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -400,7 +403,12 @@ public class GalleryActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 이탈하기 */
-                        DatabaseReference groupRef = database.getReference("group");
+                        DatabaseReference groupRef = myRef.child(mAlbumKey).child("participants").getRef();
+                        groupRef.child(mUser.getUid()).removeValue();
+                        //mUser.getEmail()
+                        //mUser.getUid()
+                        Intent intent = new Intent(activity, AlbumsActivity.class);
+                        startActivity(intent);
                         /* Group 저장 데이터 및 검색 기준 우선 설정 후 구현 */
 //                        groupRef.child(mAlbumKey).child()
                     }
