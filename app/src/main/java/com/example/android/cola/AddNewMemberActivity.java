@@ -65,6 +65,7 @@ public class AddNewMemberActivity extends BaseActivity{
             finish();
         }
 
+        //친구들 목록 ArrayList에 저장하기
         mDatabase.child("users").addValueEventListener(
                 new ValueEventListener() {
                     @Override
@@ -72,7 +73,6 @@ public class AddNewMemberActivity extends BaseActivity{
                         mUserArray.clear();
                         for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                             User user = postSnapshot.getValue(User.class);
-                            Log.d(TAG, "Name: " + user.getmUserName());
                             mUserArray.add(user);
                         }
                         mAdapter.notifyDataSetChanged();
@@ -83,7 +83,33 @@ public class AddNewMemberActivity extends BaseActivity{
                         Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                     }
                 });
+        //추가된 친구 안보이게 하기
+        DatabaseReference mParticipants = mDatabase.child("albumtest").child(mAlbumkey).getRef();
+        mParticipants.child("participants").addValueEventListener(
+                new ValueEventListener() {
 
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            String partykey = child.getKey();
+                            //Log.i(TAG, "partykey : "+partykey);
+                            for(int i = 0; i < mUserArray.size(); i++) {
+                                //Log.i(TAG, "mUserArray : "+mUserArray.get(i).getmUid().toString());
+                                if(mUserArray.get(i).getmUid().toString().equals(partykey))
+                                {
+                                    mUserArray.remove(i);
+                                }
+                            }
+                        }
+                        mAdapter.notifyDataSetChanged();
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
     }
     private AdapterView.OnItemClickListener mItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
@@ -94,6 +120,8 @@ public class AddNewMemberActivity extends BaseActivity{
             Toast.makeText(getApplicationContext(),"등록"+user.getmEmail(), Toast.LENGTH_SHORT).show();
             DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").child(user.getmUid());
             r.setValue(user.getmEmail());
+            mUserArray.remove(position);
+            mAdapter.notifyDataSetChanged();
 
         }
     };
