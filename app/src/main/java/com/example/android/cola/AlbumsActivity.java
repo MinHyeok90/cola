@@ -117,11 +117,14 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     final List albumNameList = new ArrayList();
     final List albumDateList = new ArrayList();
     final List thumbnailUrls = new ArrayList();
+    final List albumOwnerList = new ArrayList();
+
 
     private String albumKey;
     private String albumName;
     private String albumDate;
     private String albumImgUrl;
+    private String albumOwner;
 
     private String albumParty;
     private String ownUid;
@@ -161,6 +164,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 intent.putExtra("albumKey",albumKeyList.get(i).toString());
                 intent.putExtra("albumName",albumNameList.get(i).toString());
                 intent.putExtra("albumDate",albumDateList.get(i).toString());
+                intent.putExtra("albumOwner",albumOwnerList.get(i).toString());
                 startActivity(intent);
             }
         });
@@ -179,7 +183,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     albumNameList.clear();
                     albumDateList.clear();
                     thumbnailUrls.clear();
-
+                    albumOwnerList.clear();
                     //FireBase의 앨범 추가
                     //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
                     //앨범 참여자 중에 자신이 있는지 비교한 후 add함
@@ -192,6 +196,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                             albumName = child.child("name").getValue().toString();
                             albumDate = child.child("created_at").getValue().toString();
                             albumImgUrl = child.child("thumbnail").getValue().toString();
+                            albumOwner = child.child("owner").getValue().toString();
 
                             if(mUser==null){ownUid= "";}
                             else{
@@ -210,6 +215,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                                         albumNameList.add(albumName);
                                         albumDateList.add(albumDate);
                                         thumbnailUrls.add(albumImgUrl);
+                                        albumOwnerList.add(albumOwner);
                                         Log.w(TAG, "albumName : " + albumName);
                                     }
                                 }
