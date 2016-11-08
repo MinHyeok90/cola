@@ -354,6 +354,10 @@ public class GalleryActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
             case R.id.action_show_participants:
+                Intent i = new Intent(this, AddNewMemberActivity.class);
+                i.putExtra("albumkey",mAlbumKey);
+                i.putExtra("menu","party");
+                startActivity(i);
 
                 return true;
             case R.id.action_edit_album_title:
@@ -451,6 +455,7 @@ public class GalleryActivity extends AppCompatActivity {
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
                 intent.putExtra("albumkey",mAlbumKey);
+                intent.putExtra("menu","invite");
                 startActivity(intent);
                 return true;
 

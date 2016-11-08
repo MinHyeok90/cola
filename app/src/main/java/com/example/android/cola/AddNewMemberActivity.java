@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -17,6 +18,7 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -36,13 +38,17 @@ public class AddNewMemberActivity extends BaseActivity{
 
     private ListView mLvMembers;
     private ListViewAdapter mAdapter = null;
-    private ArrayList<User> mUserArray;
-
+    private ArrayList<User> mUserArray; //모든 유저 - 가입된 유저
+    private ArrayList<User> mPartyUser; //가입된 유저
     private DatabaseReference mDatabase;
     private FirebaseUser mUser;
 
 
     private String mAlbumkey;
+    private String mMenu;
+
+    private Button btn;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,8 +56,11 @@ public class AddNewMemberActivity extends BaseActivity{
 
         Intent intent = getIntent();
         mAlbumkey = intent.getStringExtra("albumkey");
+        mMenu = intent.getStringExtra("menu");         //party에서 온 것인지
+                                                        //invite에서 온 것인지
 
         mUserArray = new ArrayList<User>();
+        mPartyUser = new ArrayList<User>();
         mLvMembers = (ListView) findViewById(R.id.lvMembers);
         mAdapter = new ListViewAdapter(this, R.layout.layout_member_list_item, mUserArray);
         mLvMembers.setAdapter(mAdapter);
@@ -64,64 +73,181 @@ public class AddNewMemberActivity extends BaseActivity{
                     Toast.LENGTH_SHORT).show();
             finish();
         }
+        btn = (Button)findViewById(R.id.btnMembers);
+        btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                initFriend();
+            }
+        });
+        mUserArray.clear();
+        initFriend();
+        mAdapter.notifyDataSetChanged();
+    }
 
+    public void initFriend()
+    {
+
+        //mDatabase.child("users").addListenerForSingleValueEvent(allMemberListener);
         //친구들 목록 ArrayList에 저장하기
-        mDatabase.child("users").addValueEventListener(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        mUserArray.clear();
-                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                            User user = postSnapshot.getValue(User.class);
-                            mUserArray.add(user);
-                        }
-                        mAdapter.notifyDataSetChanged();
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    }
-                });
+        //mDatabase.child("users").addValueEventListener(allMemberListener);
+        mDatabase.child("users").addChildEventListener(allMemberListener);
         //추가된 친구 안보이게 하기
-        DatabaseReference mParticipants = mDatabase.child("albumtest").child(mAlbumkey).getRef();
-        mParticipants.child("participants").addValueEventListener(
-                new ValueEventListener() {
+        DatabaseReference mParticipants = mDatabase.child("albumtest").child(mAlbumkey).child("participants").getRef();
+        //mParticipants.addListenerForSingleValueEvent(allMemberListener);
+        //mParticipants.addValueEventListener(memberListener);
+        mParticipants.addChildEventListener(memberListener);
+        mParticipants.addValueEventListener(memberListener1);
+        mAdapter.notifyDataSetChanged();
 
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
+        //btn.performClick();
+    }
+//
+    ValueEventListener memberListener1 = new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+//            ArrayList<User> mPartyUser = new ArrayList<User>();
+//            for (DataSnapshot child : dataSnapshot.getChildren()) {
+//                String partykey = child.getKey();
+//                for (int i = 0; i < mUserArray.size(); i++) {
+//                    if (mUserArray.get(i).getmUid().toString().equals(partykey)) {
+//                        if (mMenu.equals("invite")) {
+//                            //Log.i(TAG, "invite : " + mMenu);
+//                            mUserArray.remove(i);
+//                        } else if (mMenu.equals("party")) {
+//                            mPartyUser.add(mUserArray.get(i));
+//                        }
+//                    }
+//                }
+//            }
+//            mAdapter.notifyDataSetChanged();
+//            //지워질 애들이 사실은 party원들
+//            if(mMenu.equals("party"))
+//            {
+//                mUserArray.clear();
+//                for(int i = 0; i < mPartyUser.size(); i++) {
+//                    mUserArray.add(mPartyUser.get(i));
+//                }
+//            }
+            //지워질 애들이 사실은 party원들
+            if(mMenu.equals("party"))
+            {
+                mUserArray.clear();
+                for(int i = 0; i < mPartyUser.size(); i++) {
+                    mUserArray.add(mPartyUser.get(i));
+                }
+            }
 
-                        for (DataSnapshot child : dataSnapshot.getChildren()) {
-                            String partykey = child.getKey();
-                            //Log.i(TAG, "partykey : "+partykey);
-                            for(int i = 0; i < mUserArray.size(); i++) {
-                                //Log.i(TAG, "mUserArray : "+mUserArray.get(i).getmUid().toString());
-                                if(mUserArray.get(i).getmUid().toString().equals(partykey))
-                                {
-                                    mUserArray.remove(i);
-                                }
-                            }
+            mAdapter.notifyDataSetChanged();
+        }
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+        }
+    };
+//
+//    ValueEventListener allMemberListener = new ValueEventListener() {
+//        @Override
+//        public void onDataChange(DataSnapshot dataSnapshot) {
+//            mUserArray.clear();
+//            for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+//                User user = postSnapshot.getValue(User.class);
+//                mUserArray.add(user);
+//            }
+//        }
+//        @Override
+//        public void onCancelled(DatabaseError databaseError) {
+//            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+//        }
+//    };
+    ChildEventListener memberListener = new ChildEventListener() {
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                String partykey = dataSnapshot.getKey();
+                for (int i = 0; i < mUserArray.size(); i++) {
+                    if (mUserArray.get(i).getmUid().toString().equals(partykey)) {
+                        if (mMenu.equals("invite")) {
+                            //Log.i(TAG, "invite : " + mMenu);
+                            mUserArray.remove(i);
+                        } else if (mMenu.equals("party")) {
+                            mPartyUser.add(mUserArray.get(i));
                         }
-                        mAdapter.notifyDataSetChanged();
-                    }
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                     }
                 }
-        );
-    }
+
+                mAdapter.notifyDataSetChanged();
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+        }
+    };
+
+    ChildEventListener allMemberListener = new ChildEventListener() {
+
+        @Override
+        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+
+                User user = dataSnapshot.getValue(User.class);
+                mUserArray.add(user);
+        }
+
+        @Override
+        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+        }
+
+        @Override
+        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+        }
+    };
+
     private AdapterView.OnItemClickListener mItemClickListener = new AdapterView.OnItemClickListener() {
         @Override
         public void onItemClick(AdapterView<?> parent, View view, int position,
                                 long l_position) {
             // parent는 AdapterView의 속성의 모두 사용 할 수 있다.
-            User user = (User) parent.getAdapter().getItem(position);
-            Toast.makeText(getApplicationContext(),"등록"+user.getmEmail(), Toast.LENGTH_SHORT).show();
-            DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").child(user.getmUid());
-            r.setValue(user.getmEmail());
-            mUserArray.remove(position);
-            mAdapter.notifyDataSetChanged();
+            //party일때는 추가하지 않음.
+            if(mMenu.equals("party"))
+            {
+
+            }else
+            {
+                User user = (User) parent.getAdapter().getItem(position);
+                Toast.makeText(getApplicationContext(),"등록"+user.getmEmail(), Toast.LENGTH_SHORT).show();
+                DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").child(user.getmUid());
+                r.setValue(user.getmEmail());
+                mUserArray.remove(position);
+                mAdapter.notifyDataSetChanged();
+            }
 
         }
     };
