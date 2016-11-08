@@ -106,11 +106,14 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     final List albumNameList = new ArrayList();
     final List albumDateList = new ArrayList();
     final List thumbnailUrls = new ArrayList();
+    final List albumOwnerList = new ArrayList();
+
 
     private String albumKey;
     private String albumName;
     private String albumDate;
     private String albumImgUrl;
+    private String albumOwner;
 
     private String albumParty;
     private String ownUid;
@@ -150,6 +153,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 intent.putExtra("albumKey",albumKeyList.get(i).toString());
                 intent.putExtra("albumName",albumNameList.get(i).toString());
                 intent.putExtra("albumDate",albumDateList.get(i).toString());
+                intent.putExtra("albumOwner",albumOwnerList.get(i).toString());
                 startActivity(intent);
             }
         });
@@ -168,7 +172,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     albumNameList.clear();
                     albumDateList.clear();
                     thumbnailUrls.clear();
-
+                    albumOwnerList.clear();
                     //FireBase의 앨범 추가
                     //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
                     //앨범 참여자 중에 자신이 있는지 비교한 후 add함
@@ -181,6 +185,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                             albumName = child.child("name").getValue().toString();
                             albumDate = child.child("created_at").getValue().toString();
                             albumImgUrl = child.child("thumbnail").getValue().toString();
+                            albumOwner = child.child("owner").getValue().toString();
 
                             if(mUser==null){ownUid= "";}
                             else{
@@ -201,6 +206,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                                         thumbnailUrls.add(albumImgUrl);
                                         //만일 이미지가 없다면, no_picture 이미지를 출력한다.(아답터에서 no_picture이미지 할당)
 
+                                        albumOwnerList.add(albumOwner);
                                         Log.w(TAG, "albumName : " + albumName);
                                     }
                                 }
@@ -279,6 +285,11 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
                 signOut();
                 return true;
+            case R.id.action_bluetoothTest:
+                Intent intent = new Intent(AlbumsActivity.this, BluetoothTestActivity.class);
+                startActivity(intent);
+                return true;
+
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.

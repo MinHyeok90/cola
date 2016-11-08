@@ -116,6 +116,7 @@ public class GalleryActivity extends AppCompatActivity {
     private String mAlbumName = null;
     private String mStartDate = null;
     private String mThumbnail = null;
+    private String mAlbumOwner = null;
 
     final List albumList = new ArrayList();
 
@@ -132,6 +133,7 @@ public class GalleryActivity extends AppCompatActivity {
         mAlbumKey = intent.getStringExtra("albumKey");// 인텐트에서 받아온 앨범 key 값으로 변경할것? 혹은 db 연
         mAlbumName = intent.getStringExtra("albumName");//인텐트에서 앨범 이름 받아오기
         mStartDate = intent.getStringExtra("albumDate"); //이것도 인텐트에서 날짜 받아오는게..
+        mAlbumOwner = intent.getStringExtra("albumOwner"); //이것도 인텐트에서 날짜 받아오는게..
 
         mAlbumRef = myRef.child(mAlbumKey);
         DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
@@ -425,16 +427,29 @@ public class GalleryActivity extends AppCompatActivity {
                 bld.setPositiveButton("앨범에서 나가기",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
+//                        String owner = myRef.child(mAlbumKey).child("owner");
                         /* 이탈하기 */
+
                         myRef.child(mAlbumKey).child("participants").child(mUser.getUid()).removeValue();
                         myRef.child(mAlbumKey).child("participants").addValueEventListener(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
+                                String uid="";
                                 partyCount = (int)dataSnapshot.getChildrenCount();
                                 Log.i(TAG,"data0수"+partyCount);
                                 if(partyCount == 0)
-                                {
+                                {/* 참여자가 모두 없어지면 앨범이 없어짐 */
                                     myRef.child(mAlbumKey).removeValue();
+                                }else
+                                {/* 주인장이 없어지면 주인장을 바꿈*/
+                                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                                        uid = child.getKey();
+                                        if(!mAlbumOwner.equals(uid))
+                                        {
+                                            myRef.child(mAlbumKey).child("owner").setValue(uid);
+                                            break;
+                                        }
+                                    }
                                 }
 
                             }
