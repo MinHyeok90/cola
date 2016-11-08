@@ -28,7 +28,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".SignUpActivity" />
-        <activity android:name=".AlbumsActivity" />
+        <activity android:name=".AlbumsActivity"
+            android:screenOrientation="portrait"/>
         <activity
             android:name=".GalleryActivity"
             android:parentActivityName=".AlbumsActivity">

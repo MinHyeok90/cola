@@ -1,11 +1,13 @@
 package com.example.android.cola;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
@@ -26,8 +28,10 @@ import java.util.ArrayList;
 
 /**
  * Created by kyuholee on 2016. 9. 6..
+ * Modified by 경태 on 2016. 11.6
+ *   앨범에 참여자 추가
  */
-public class AddNewMemberActivity extends BaseActivity {
+public class AddNewMemberActivity extends BaseActivity{
     private static final String TAG = "AllMembersActivity";
 
     private ListView mLvMembers;
@@ -35,18 +39,23 @@ public class AddNewMemberActivity extends BaseActivity {
     private ArrayList<User> mUserArray;
 
     private DatabaseReference mDatabase;
-    private DatabaseReference myRef;
     private FirebaseUser mUser;
 
+
+    private String mAlbumkey;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_addnewmember);
 
+        Intent intent = getIntent();
+        mAlbumkey = intent.getStringExtra("albumkey");
+
         mUserArray = new ArrayList<User>();
         mLvMembers = (ListView) findViewById(R.id.lvMembers);
         mAdapter = new ListViewAdapter(this, R.layout.layout_member_list_item, mUserArray);
         mLvMembers.setAdapter(mAdapter);
+        mLvMembers.setOnItemClickListener(mItemClickListener);
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -56,6 +65,7 @@ public class AddNewMemberActivity extends BaseActivity {
             finish();
         }
 
+        //친구들 목록 ArrayList에 저장하기
         mDatabase.child("users").addValueEventListener(
                 new ValueEventListener() {
                     @Override
@@ -63,7 +73,6 @@ public class AddNewMemberActivity extends BaseActivity {
                         mUserArray.clear();
                         for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                             User user = postSnapshot.getValue(User.class);
-                            Log.d(TAG, "Name: " + user.getmUserName());
                             mUserArray.add(user);
                         }
                         mAdapter.notifyDataSetChanged();
@@ -74,7 +83,73 @@ public class AddNewMemberActivity extends BaseActivity {
                         Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                     }
                 });
+        //추가된 친구 안보이게 하기
+        DatabaseReference mParticipants = mDatabase.child("albumtest").child(mAlbumkey).getRef();
+        mParticipants.child("participants").addValueEventListener(
+                new ValueEventListener() {
+
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            String partykey = child.getKey();
+                            //Log.i(TAG, "partykey : "+partykey);
+                            for(int i = 0; i < mUserArray.size(); i++) {
+                                //Log.i(TAG, "mUserArray : "+mUserArray.get(i).getmUid().toString());
+                                if(mUserArray.get(i).getmUid().toString().equals(partykey))
+                                {
+                                    mUserArray.remove(i);
+                                }
+                            }
+                        }
+                        mAdapter.notifyDataSetChanged();
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                }
+        );
     }
+    private AdapterView.OnItemClickListener mItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position,
+                                long l_position) {
+            // parent는 AdapterView의 속성의 모두 사용 할 수 있다.
+            User user = (User) parent.getAdapter().getItem(position);
+            Toast.makeText(getApplicationContext(),"등록"+user.getmEmail(), Toast.LENGTH_SHORT).show();
+            DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").child(user.getmUid());
+            r.setValue(user.getmEmail());
+            mUserArray.remove(position);
+            mAdapter.notifyDataSetChanged();
+
+        }
+    };
+    //@Override
+    //public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+// /* 변경 시작 */
+//                final DatabaseReference albumRef = myRef.child(mAlbumKey);
+//                albumRef.child("name").setValue(mAlbumName);
+//
+//                // ActionBar에 타이틀 변경
+//                getSupportActionBar().setTitle(mAlbumName);
+   // }
+
+//    @Override
+//    public void onItemClick(ListView adapterView, View view, int i, long l) {
+//
+//        User user = mUserArray.get(i);
+//        DatabaseReference r = mDatabase.child("albumtest").child(mAlbumkey).child("participants").push();
+//        r.setValue(user.getmUserName());
+//        Toast.makeText(getApplicationContext(),"클릭",Toast.LENGTH_LONG).show();
+//// /* 변경 시작 */
+////                final DatabaseReference albumRef = myRef.child(mAlbumKey);
+////                albumRef.child("name").setValue(mAlbumName);
+////
+////                // ActionBar에 타이틀 변경
+////                getSupportActionBar().setTitle(mAlbumName);
+//    }
 
     private class ListViewAdapter extends ArrayAdapter<User> {
         private ArrayList<User> items;
@@ -115,11 +190,14 @@ public class AddNewMemberActivity extends BaseActivity {
                 Glide.with(getApplicationContext())
                         .load(user.getmPhotoUrl())
                         .into(viewHolder.ivPic);
-
                 viewHolder.tvName.setText(user.getmUserName());
                 viewHolder.tvEmail.setText(user.getmEmail());
+
             }
             return convertView;
         }
+
     }
+
+
 }

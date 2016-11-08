@@ -9,11 +9,13 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.media.Image;
 import android.net.Uri;
 import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -109,9 +111,12 @@ public class GalleryActivity extends AppCompatActivity {
 
     final List albumList = new ArrayList();
 
+    //0이면 지워져야 하므로
+    private int partyCount = -1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_gallery);
 
         Intent intent = getIntent();
@@ -400,7 +405,26 @@ public class GalleryActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 이탈하기 */
-                        DatabaseReference groupRef = database.getReference("group");
+                        myRef.child(mAlbumKey).child("participants").child(mUser.getUid()).removeValue();
+                        myRef.child(mAlbumKey).child("participants").addValueEventListener(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                partyCount = (int)dataSnapshot.getChildrenCount();
+                                Log.i(TAG,"data0수"+partyCount);
+                                if(partyCount == 0)
+                                {
+                                    myRef.child(mAlbumKey).removeValue();
+                                }
+
+                            }
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+
+                        Intent intent = new Intent(activity, AlbumsActivity.class);
+                        startActivity(intent);
                         /* Group 저장 데이터 및 검색 기준 우선 설정 후 구현 */
 //                        groupRef.child(mAlbumKey).child()
                     }
@@ -411,6 +435,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
+                intent.putExtra("albumkey",mAlbumKey);
                 startActivity(intent);
                 return true;
 

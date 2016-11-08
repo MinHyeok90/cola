@@ -11,6 +11,9 @@ import static android.R.id.list;
 
 /**
  * Created by Kimminhyeok on 2016. 10. 27..
+ *
+ * Modified by 김민혁 on 2016-11-08
+ *  생성자 호출시, 매개변수 thumbnail에 null이 넘어오면 아직 이미지 없음을 기록.
  */
 
 
@@ -20,13 +23,22 @@ public class Album {
     String isRecording;
     String name;
     String owner;
+    String thumbnail;
+//    String participants;
 
-    public Album(String created_at, Map<String, Object> filelist, String isRecording, String name, String owner) {
+    public Album(String created_at, Map<String, Object> filelist, String isRecording, String name, String owner, String thumbnail) {
         this.created_at = created_at;
         this.filelist = filelist;
         this.isRecording = isRecording;
         this.name = name;
         this.owner = owner;
+
+        if(thumbnail == null){
+            this.thumbnail = "https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/no_picture.png?alt=media&token=2f9c3a39-9a7f-4b49-94bc-4be00e6a83f1";
+        }else {
+            this.thumbnail = thumbnail;
+        }
+//        this.participants = participants;
     }
 
     public String getCreated_at() {
@@ -69,6 +81,22 @@ public class Album {
         this.owner = owner;
     }
 
+    public String getThumbnail() {
+        return thumbnail;
+    }
+
+    public void setThumbnail(String thumbnail) {
+        this.thumbnail = thumbnail;
+    }
+
+//    public String getParticipants() {
+//        return participants;
+//    }
+//
+//    public void setParticipants(String participants) {
+//        this.participants = participants;
+//    }
+
     @Exclude
     public Map<String, Object> toMap() {
         HashMap<String, Object> result = new HashMap<>();
@@ -77,6 +105,7 @@ public class Album {
         result.put("isRecording", isRecording);
         result.put("name", name);
         result.put("owner", owner);
+//        result.put("participants", owner);
 
         return result;
     }

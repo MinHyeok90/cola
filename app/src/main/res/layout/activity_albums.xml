@@ -4,18 +4,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:focusable="false"
     tools:context="com.example.android.cola.AlbumsActivity">
 
     <GridView
         android:id="@+id/gridview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="400dp"
         android:columnWidth="200dp"
         android:horizontalSpacing="10dp"
         android:verticalSpacing="10dp"
-        android:numColumns="auto_fit"
+        android:numColumns="2"
         android:stretchMode="columnWidth"
         android:gravity="center"
         />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id = "@+id/album_btrefresh"
+        android:onClick="onClick"
+        android:text="동기화"/>
 
 </LinearLayout>
