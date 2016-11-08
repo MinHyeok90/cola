@@ -104,7 +104,7 @@ public class LoginActivity extends BaseActivity implements GoogleApiClient.OnCon
 
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
 
-                    Intent intent = new Intent(LoginActivity.this, AlbumsActivity.class);
+                    Intent intent = new Intent(LoginActivity.this, IntroActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
                     finish();
