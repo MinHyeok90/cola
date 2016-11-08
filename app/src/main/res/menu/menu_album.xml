@@ -15,5 +15,9 @@
         android:id="@+id/action_logout"
         android:title="로그아웃"
         app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_bluetoothTest"
+        android:title="블루투스"
+        app:showAsAction="always"/>
 
 </menu>
