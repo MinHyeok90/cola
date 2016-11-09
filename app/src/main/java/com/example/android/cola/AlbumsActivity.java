@@ -242,6 +242,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 }
             }
         );
+
     }
 
 
@@ -316,6 +317,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     @Override
     protected void onResume() {
         super.onResume();
+        getAlbumList();
         mGridAdapter.notifyDataSetChanged();
     }
 
@@ -377,6 +379,10 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             case R.id.action_bluetoothTest:
                 Intent intent = new Intent(AlbumsActivity.this, BluetoothTestActivity.class);
                 startActivity(intent);
+                return true;
+            case android.R.id.home:
+                // NavUtils.navigateUpFromSameTask(this);
+                finish();
                 return true;
 
             default:

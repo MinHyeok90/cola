@@ -524,7 +524,10 @@ public class GalleryActivity extends AppCompatActivity {
                 startActivityForResult(i, REQ_CODE_PICK_PICTURE);
 */
                 return true;
-
+            case android.R.id.home:
+                // NavUtils.navigateUpFromSameTask(this);
+                finish();
+                return true;
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
