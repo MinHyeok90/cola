@@ -40,6 +40,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.example.android.cola.R.id.gridview;
 /*
  * Created by 김민혁 on 2016-09-15
  *  앨범집 activity.
@@ -159,6 +161,10 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         });
 
         getAlbumList();
+        if (albumKeyList.size() == 0){
+            GridView gv = (GridView) findViewById(R.id.gridview);
+//            gv.setBackground();
+        }
     }
 //class OnValueEventHandler implements ValueEventListener {
 //
