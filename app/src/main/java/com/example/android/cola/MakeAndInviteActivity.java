@@ -142,6 +142,7 @@ public class MakeAndInviteActivity extends AppCompatActivity {
                     Album newAlbum = new Album(String.valueOf(startTime), null, "True", dateString+"부터 찍은 사진", mUser.getUid(), null);
                     DatabaseReference r = mRef.push();
                     r.setValue(newAlbum);
+                    r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
                     for(String s : emailList){
                         String uid = mEmailKeyMap.get(s).getmUid();
                         r.child("participants").child(uid).setValue(s);
