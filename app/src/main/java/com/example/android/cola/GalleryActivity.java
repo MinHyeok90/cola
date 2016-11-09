@@ -587,6 +587,9 @@ public class GalleryActivity extends AppCompatActivity {
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            TextView progressView = (TextView) findViewById(R.id.progress); //khlee
+                            progressView.setVisibility(View.GONE); //khlee
+
                             // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                             Uri downloadUrl = taskSnapshot.getDownloadUrl();
 
@@ -607,9 +610,10 @@ public class GalleryActivity extends AppCompatActivity {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                             TextView progressView = (TextView) findViewById(R.id.progress);
+                            progressView.setVisibility(View.VISIBLE); //khlee
                             double progress = 100.0 * count * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()) / totalCount;
                             System.out.println("Upload is " + progress + "% done");
-                            progressView.setText("uploading: " + progress + "%");
+                            progressView.setText("업로딩: " + progress + "%");
                         }
                     });
                 }
