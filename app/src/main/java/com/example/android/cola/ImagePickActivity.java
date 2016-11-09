@@ -432,10 +432,30 @@ public class ImagePickActivity extends AppCompatActivity {
                 // NavUtils.navigateUpFromSameTask(this);
                 finish();
                 return true;
-            
+            /* 갤러리에서 선택 */
+            case R.id.action_select_gallery:
+                Intent i = new Intent(Intent.ACTION_PICK);
+                i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+                i.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
+                i.setData(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI); // images on the SD card.
+
+                // 결과를 리턴하는 Activity 호출
+                startActivityForResult(i, REQ_CODE_PICK_PICTURE);
+                return true;
             default:
                 return true;
 
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK) {
+            if (requestCode == REQ_CODE_PICK_PICTURE) {
+                setResult(resultCode, data);
+                finish();
+            }
         }
     }
 }

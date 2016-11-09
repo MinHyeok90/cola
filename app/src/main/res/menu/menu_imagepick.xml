@@ -3,6 +3,10 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_select_gallery"
+        android:title="갤러리에서"
+        app:showAsAction="ifRoom"/>
+    <item
         android:id="@+id/action_select_all"
         android:title="모두 선택"
         app:showAsAction="ifRoom"/>
