@@ -80,12 +80,16 @@ import static com.google.android.gms.internal.zzaoj.bld;
  * Modified by 김미래 on 2016-11-04
  *  사진 업로드 시 owner 정보도 업로드.
  *  TODO: owner 정보 화면에 출력될 수 있게 할 것.
+ *
+ * Modify by 김민혁 on 2016-11-08
+ *  사진 업로드 시 썸네일이 DEFALUT면 썸네일 Url 변경
  */
 
 public class GalleryActivity extends AppCompatActivity {
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("albumtest");
+    DatabaseReference mAlbumRef = null;
     public FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReferenceFromUrl("gs://cola-b6336.appspot.com");
     StorageReference imagesRef;
@@ -104,10 +108,14 @@ public class GalleryActivity extends AppCompatActivity {
     /**
      * 2016.10.27. by 김미래
      * 아래 3개 값 전역변수로 변경
+     *
+     * 2016.11.08. by 김민혁
+     * thumnail변수 추가
      */
     private String mAlbumKey  = null;
     private String mAlbumName = null;
     private String mStartDate = null;
+    private String mThumbnail = null;
     private String mAlbumOwner = null;
 
     final List albumList = new ArrayList();
@@ -127,6 +135,7 @@ public class GalleryActivity extends AppCompatActivity {
         mStartDate = intent.getStringExtra("albumDate"); //이것도 인텐트에서 날짜 받아오는게..
         mAlbumOwner = intent.getStringExtra("albumOwner"); //이것도 인텐트에서 날짜 받아오는게..
 
+        mAlbumRef = myRef.child(mAlbumKey);
         DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
 
         // ActionBar에 타이틀 변경
@@ -147,6 +156,19 @@ public class GalleryActivity extends AppCompatActivity {
 
                 intent.putExtra("url", uri);
                 startActivity(intent);
+            }
+        });
+
+        //썸네일 정보를 읽기위한 리스너.
+        mAlbumRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                mThumbnail = dataSnapshot.child("thumbnail").getValue().toString();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
         /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
@@ -381,9 +403,8 @@ public class GalleryActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 변경 시작 */
-                        final DatabaseReference albumRef = myRef.child(mAlbumKey);
                         mAlbumName = input.getText().toString();
-                        albumRef.child("name").setValue(mAlbumName);
+                        mAlbumRef.child("name").setValue(mAlbumName);
 
                         // ActionBar에 타이틀 변경
                         getSupportActionBar().setTitle(mAlbumName);
@@ -544,6 +565,10 @@ public class GalleryActivity extends AppCompatActivity {
                             r.child("url").setValue(downloadUrl.toString());
                             r.child("filename").setValue(filename);
                             r.child("owner").setValue(mUser.getUid());
+                            //앨범의 썸네일이 지정되어있지 않다면(=첫 이미지 삽입이리면) 썸네일을 최초것으로 변경한다.
+                            if(mThumbnail.equals("DEFALUT")){
+                                mAlbumRef.child("thumbnail").setValue(downloadUrl.toString());
+                            }
 
                             albumList.add(downloadUrl.toString());
                             gridAdapter.notifyDataSetChanged();

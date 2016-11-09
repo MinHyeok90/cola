@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Cola</string>
+    <string name="app_name">COLA</string>
     <string name="label_google_sign_in">Firebase + Google Sign In</string>
     <string name="desc_google_sign_in">Use a Google Sign In credential to authenticate with Firebase.</string>
 
@@ -52,13 +52,20 @@
 
     <string name="action_edit_album">제목 변경</string>
     <string name="action_exit_album">이 앨범에서 나가기</string>
-    <string name="action_invite">Invite</string>
+    <string name="action_invite">초대하기</string>
     <string name="action_addpicture">Add Picture</string>
     <string name="add_new_member">Add new member</string>
     <string name="action_complete_select">완료</string>
     <string name="db_album">albumtest</string>
 
     <string name="action_logout">Logout</string>
+    <string name="app_desc">사진을 친구들과 쉽고 빠르게 공유하세요.</string>
+    <string name="skip">건너뛰기</string>
+    <string name="done">완료</string>
+    <string name="intro1_title">함께 만드는 공유앨범</string>
+    <string name="intro1_desc">친구와 함께 사진을 공유하여 즐거운 추억을 만드세요.</string>
+    <string name="intro2_title">자동으로 앨범 생성</string>
+    <string name="intro2_desc">함께 있는 친구들에게 자동으로 앨범을 만들어 줍니다.</string>
 
 
 </resources>
