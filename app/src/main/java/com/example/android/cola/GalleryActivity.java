@@ -85,7 +85,7 @@ import static com.google.android.gms.internal.zzaoj.bld;
  *  TODO: owner 정보 화면에 출력될 수 있게 할 것.
  *
  * Modify by 김민혁 on 2016-11-08
- *  사진 업로드 시 썸네일이 DEFALUT면 썸네일 Url 변경
+ *  사진 업로드 시 썸네일이 DEFAULT면 썸네일 Url 변경
  *
  * Modify by 김민혁 on 2016-11-09
  *  앨범 삭제시 storage에서도 사진 모두 삭제
@@ -210,6 +210,8 @@ public class GalleryActivity extends AppCompatActivity {
                 Object thumb = dataSnapshot.child("thumbnail").getValue();
                 if (thumb != null)
                     mThumbnail = thumb.toString();
+
+                Log.i(TAG,"mThumbnail / listener"+mThumbnail);
             }
 
             @Override
@@ -265,6 +267,7 @@ public class GalleryActivity extends AppCompatActivity {
         mReference.addListenerForSingleValueEvent(valueEventListener);
 
         iv = (ImageView) findViewById(R.id.emptyGallery);
+
     }
 
     @Override
@@ -299,17 +302,39 @@ public class GalleryActivity extends AppCompatActivity {
                 bld.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int j) {
+                        boolean isSame =false;
                         /* 삭제 시작 */
                         for (int i = 0; i < albumList.size(); i++) {
                             if (albumList.get(i).isChecked()) {
                                 myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
+                                if(mThumbnail.toString().equals(albumList.get(i).getUrl()))
+                                {
+                                    isSame = true;
+                                }
                                 albumList.remove(i);
                                 i--;
                             }
                         }
                         imageBool();//emptyGallery 여부
                         gridAdapter.notifyDataSetChanged();
+                        if(albumList.size()==0)
+                        {
+                            //mThumbnail = "DEFAULT";
+                        }
+                        else
+                        {
+                            Log.i(TAG,"mThumbnail / get i : "+mThumbnail);
+                            if(isSame)
+                            {
+                                Log.i(TAG,"isSame");
+                                myRef.child(mAlbumKey).child("thumbnail").setValue(albumList.get(0).getUrl());
+                            }
+                            else{
+                                Log.i(TAG,"isNotSame");
+                            }
+                        }
                     }
+
                 });
                 bld.setNegativeButton("취소", null);
                 bld.show();
@@ -319,6 +344,8 @@ public class GalleryActivity extends AppCompatActivity {
                 for (int i = 0; i < albumList.size(); i++) {
                     if (albumList.get(i).isChecked()) {
                         myRef.child(mAlbumKey).child("thumbnail").setValue(albumList.get(i).getUrl());
+                        mThumbnail = albumList.get(i).getUrl();
+                        Log.i(TAG,"mThumbnail / button_make_thumnail"+mThumbnail);
                         break;
                     }
                 }
@@ -661,9 +688,11 @@ public class GalleryActivity extends AppCompatActivity {
                             r.child("filename").setValue(filename);
                             r.child("owner").setValue(mUser.getUid());
 
-                            //앨범 썸네일 값이 DEFALUT라면(=앨범에 처음으로 이미지를 추가하는 경우라면) 썸네일을 최초 추가된 이미지로 변경한다.
-                            if("DEFALUT".equals(mThumbnail)){   //mThumbnail이 null일 경우에 대한 방어코드.
+                            //앨범 썸네일 값이 DEFAULT라면(=앨범에 처음으로 이미지를 추가하는 경우라면) 썸네일을 최초 추가된 이미지로 변경한다.
+                            if("DEFAULT".equals(mThumbnail)){   //mThumbnail이 null일 경우에 대한 방어코드.
                                 myRef.child(mAlbumKey).child("thumbnail").setValue(downloadUrl.toString());
+                                mThumbnail = downloadUrl.toString();
+                                Log.i(TAG,"mThumbnail / DEFAULT"+mThumbnail);
                             }
 
                             albumList.add(new GalleryImage(r.getKey(), downloadUrl.toString(), filename));
