@@ -26,7 +26,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Parcel;
 import android.os.ParcelUuid;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -54,11 +56,12 @@ import java.util.UUID;
 
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class BluetoothTestActivity extends AppCompatActivity {
-    private Button btnStart, btnEnd, btnChk, btnDrop;
+    private Button btnStart, btnEnd, btnChk, btnDrop, btnFind;
     public final String TAG = "BluetoothActivity";
 
     private static final int PERMISSIONS_ACCESS_COARSE_LOCATION = 111;
     private static final int PERMISSIONS_ACCESS_FINE_LOCATION = 112;
+    private static final String STRING_TRASH = "NOT_A_DATA_TRASH";
     private static final String UID = "CDB7950D-73F1-4D4D-8E47-C090502DBD63";
 
     private DatabaseOpenHelper mDatabaseOpenHelper;
@@ -143,6 +146,8 @@ public class BluetoothTestActivity extends AppCompatActivity {
         btnEnd = (Button)findViewById(R.id.bluetoothDisconnectButton);
         btnChk = (Button)findViewById(R.id.check_db);
         btnDrop = (Button)findViewById(R.id.drop_db);
+        btnFind = (Button)findViewById(R.id.find_friends);
+
         btnStart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,11 +190,102 @@ public class BluetoothTestActivity extends AppCompatActivity {
                 mDatabaseOpenHelper.dropTable();
             }
         });
+        btnFind.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                Toast.makeText(getApplicationContext(),"로그 분석 시작", Toast.LENGTH_SHORT).show();
+                /*Intent intent = new Intent(BluetoothTestActivity.this,FindNearbyFriendsService.class);
+                startService(intent);*/
+                mDatabaseOpenHelper = new DatabaseOpenHelper(getApplicationContext());
+                mText = (TextView) findViewById(R.id.bluetoothTestTextView);
+
+                List<FriendsDeviceLog> friendsDeviceLogs = mDatabaseOpenHelper.getAllFriendsDeviceLogs();
+                String tvText = "";
+
+                List<Group> groups = findFriends(friendsDeviceLogs);
+
+                for(Group g : groups){
+                    tvText += g.getStartTime() + " " + g.getEndTime() + "\n";
+                    for(String s : g.getNameList()){
+                        tvText+= s + " ";
+                    }
+                    tvText += "\n\n";
+                }
+                Intent intent = new Intent(getApplicationContext(), MakeAndInviteActivity.class);
+
+                intent.putParcelableArrayListExtra("groups", (ArrayList<? extends Parcelable>) groups);
+                startActivity(intent);
+
+            }
+        });
+
 
     }
+    /* 친구 리스트 만드는 함수 */
+    public List<Group> findFriends(List<FriendsDeviceLog> friendsDeviceLogs){
+        String start="", end="";
+        boolean flag = false;
+        List<Group> groups = new ArrayList<Group>();
 
+        if(!friendsDeviceLogs.isEmpty()){
+            List<String> emailList = new ArrayList<String>();
+
+            for(int i=0; i<friendsDeviceLogs.size(); i++){
+                FriendsDeviceLog fcur = friendsDeviceLogs.get(i);
+                // i==0일때 친구가 있으면
+                if(i==0){
+                    if( !fcur.getUserID().matches(STRING_TRASH)) {
+                        start = fcur.getTimestamp();
+                        flag = true;
+
+                        String curEmail = fcur.getUserID();
+                        if(!emailList.contains(curEmail)) {
+                            emailList.add(curEmail);
+                        }
+                    }
+                }
+                else{ //i > 0
+                    FriendsDeviceLog fprev = friendsDeviceLogs.get(i-1);
+                    // 이전에 친구 없었고 지금 친구 있으면 -- 그롭 시작
+                    if(fprev.getUserID().matches(STRING_TRASH) && !fcur.getUserID().matches(STRING_TRASH)){
+                        // 시작 시간 : 지금
+                        start = fcur.getTimestamp();
+                        flag = true;
+                        String curEmail = fcur.getUserID();
+                        if(!emailList.contains(curEmail)) {
+                            emailList.add(curEmail);
+                        }
+                    }
+                    // 이전에 친구 있었는데 지금 없으면 -- 그룹 끝
+                    if(!fprev.getUserID().matches(STRING_TRASH) && fcur.getUserID().matches(STRING_TRASH)){
+                        end = fprev.getTimestamp();
+                        flag = false;
+
+                        groups.add(new Group(start, end, emailList));
+                        emailList = new ArrayList<String>();
+                    }
+                }
+                if(flag) {
+                    String curEmail = fcur.getUserID();
+                    if(!emailList.contains(curEmail)) {
+                        emailList.add(curEmail);
+                    }
+                    // 마지막 루프인데 flag가 참이면
+                    if (i == friendsDeviceLogs.size() - 1) {
+                        end = fcur.getTimestamp();
+                        groups.add(new Group(start, end, emailList));
+                    }
+
+                }
+
+            }
+        }
+        return groups;
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
+
+
 }

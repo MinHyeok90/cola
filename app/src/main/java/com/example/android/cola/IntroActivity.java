@@ -2,6 +2,7 @@ package com.example.android.cola;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -15,12 +16,22 @@ public class IntroActivity extends AppIntro {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        int colorPrimary;
+        int colorPrimaryDark;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            colorPrimary = getColor(R.color.colorPrimary);
+            colorPrimaryDark = getColor(R.color.colorPrimary);
+        }
+        else {
+            colorPrimary = getResources().getColor(R.color.colorPrimary);
+            colorPrimaryDark = getResources().getColor(R.color.colorPrimaryDark);
+        }
         addSlide(AppIntroFragment.newInstance(getString(R.string.intro1_title), getString(R.string.intro1_desc),
                 R.drawable.polaroid,
-                Color.parseColor("#ffffff"), getColor(R.color.colorPrimary), getColor(R.color.colorPrimaryDark)));
+                Color.parseColor("#ffffff"), colorPrimary, colorPrimaryDark));
         addSlide(AppIntroFragment.newInstance(getString(R.string.intro2_title), getString(R.string.intro2_desc),
                 R.drawable.friend,
-                Color.parseColor("#ffffff"), getColor(R.color.colorPrimary), getColor(R.color.colorPrimaryDark)));
+                Color.parseColor("#ffffff"), colorPrimary, colorPrimaryDark));
 
         setSkipTextTypeface(getResources().getString(R.string.skip));
         setColorSkipButton(Color.parseColor("#000000"));

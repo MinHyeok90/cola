@@ -57,7 +57,7 @@ public class BluetoothService extends Service {
     public final static int REQUEST_ENABLE_BT= 3;
 
     // Stops scanning after 30 seconds.
-    private static final long SCAN_PERIOD = 30000;
+    private static final long SCAN_PERIOD = 10000;
     private static final String UID = "CDB7950D-73F1-4D4D-8E47-C090502DBD63";
 
     private BluetoothService mBluetoothService;
@@ -106,8 +106,8 @@ public class BluetoothService extends Service {
         now = System.currentTimeMillis();
         Date date = new Date(now);
         // 각자 사용할 포맷을 정하고 문자열로 만든다.
-        SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        strNow = sdfNow.format(date);
+        //SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        strNow = String.valueOf(date.getTime()); //sdfNow.format(date);
 
         // DB Create and Open
         mDatabaseOpenHelper = new DatabaseOpenHelper(this);
@@ -126,7 +126,7 @@ public class BluetoothService extends Service {
                 boolean isEqual = false;
 
                 for(FriendsDeviceLog fdLog: friendsDeviceList){
-                    if(fdLog.getUserID() == email){
+                    if(fdLog.getUserID().matches(email)){
                         isEqual =true;
                         break;
                     }
@@ -182,6 +182,9 @@ public class BluetoothService extends Service {
     public void onDestroy() {
         Toast.makeText(getApplicationContext(),"서비스를 종료합니다.", Toast.LENGTH_SHORT).show();
         Log.d(TAG, "onDestroy()");
+        if(friendsDeviceList.size() < 1){
+            mDatabaseOpenHelper.insert(new FriendsDeviceLog("NOT_A_DATA_TRASH", strNow));
+        }
         if(isScanning){
             mBluetoothLeScanner.stopScan(mScanCallback);
             Log.i( "BLE", "stopScan()");
