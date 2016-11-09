@@ -241,7 +241,7 @@ public class GalleryActivity extends AppCompatActivity {
                         */
                         String fileUri = child.child("url").getValue().toString();
                         String fileName = child.child("filename").getValue().toString();
-                        albumList.add(new GalleryImage(fileUri, fileName));
+                        albumList.add(new GalleryImage(child.getKey(),fileUri, fileName));
                         //filenameList.add(fileName);
                     }
                 }
@@ -267,80 +267,18 @@ public class GalleryActivity extends AppCompatActivity {
     void onClick(View v) {
 
         switch (v.getId()) {
+            case R.id.button_remove_selected:
 
-            /*case R.id.loadButton:
-                //String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
-                final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
-                final StorageReference albumReference = storageRef.child(mAlbumKey);
-
-                //최근 파일 불러오기, projection: select할 필드 선택
-                String[] projection = new String[]{
-                        MediaStore.Images.ImageColumns._ID,
-                        MediaStore.Images.ImageColumns.DATA,
-                        MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                        MediaStore.Images.ImageColumns.DATE_TAKEN,
-                        MediaStore.Images.ImageColumns.MIME_TYPE
-                };
-                String where = MediaStore.Images.Media.DATE_TAKEN + " >= " + start;
-
-                //문제 있음. 외장메모리 없는 경우 External_content_url 작동 안함
-                //Internal_conent_uri로 실행 시 잘 안 되는 것 같음
-                Cursor cursor = getContentResolver()
-                        .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, where,
-                                null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
-                ; //returns cursor with 3 columns mentioned above
-
-                boolean a = cursor.isAfterLast();
-                while (cursor.moveToNext()) {
-                    String filePath = cursor.getString(1);
-                    final String filename = filePath.split("/")[filePath.split("/").length - 1];
-                    if (!filenameList.contains(filename)) {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inSampleSize = 4;
-                        Bitmap src = BitmapFactory.decodeFile(filePath, options);
-                        Bitmap resized = Bitmap.createScaledBitmap(src, 256, 256, true);
-
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        resized.compress(Bitmap.CompressFormat.PNG, 0 *//*ignored for PNG*//*, bos);
-                        byte[] bitmapData = bos.toByteArray();
-                        InputStream bs = new ByteArrayInputStream(bitmapData);
-
-                        String dateTaken = cursor.getString(3);
-                        long dTaken = Long.parseLong(dateTaken);
-                        Date date = new Date(dTaken);
-                        StorageReference fileReference = albumReference.child(filename);
-
-                        UploadTask uploadTask = fileReference.putStream(bs);
-
-                        // Register observers to listen for when the download is done or if it fails
-                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                // Handle unsuccessful uploads
-                            }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                                DatabaseReference r = mReference.push();
-                                String filename = taskSnapshot.getMetadata().getName();
-                                r.child("url").setValue(downloadUrl.toString());
-                                r.child("filename").setValue(filename);
-
-                            }
-                        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                TextView progressView = (TextView) findViewById(R.id.progress);
-                                double progress = 100.0 * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                                System.out.println("Upload is " + progress + "% done");
-                                progressView.setText("uploading: " + progress + "%");
-                            }
-                        });
+                for(int i=0; i<albumList.size();i++){
+                    if (albumList.get(i).isChecked()){
+                        myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
+                        albumList.remove(i);
+                        i--;
                     }
                 }
-                break;*/
+                gridAdapter.notifyDataSetChanged();
+
+                break;
         }
     }
 
@@ -670,7 +608,7 @@ public class GalleryActivity extends AppCompatActivity {
                                 myRef.child(mAlbumKey).child("thumbnail").setValue(downloadUrl.toString());
                             }
 
-                            albumList.add(new GalleryImage(downloadUrl.toString(), filename));
+                            albumList.add(new GalleryImage(r.getKey(), downloadUrl.toString(), filename));
                             gridAdapter.notifyDataSetChanged();
                         }
                     }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -689,11 +627,13 @@ public class GalleryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
     class GalleryImage{
+        public String key;
         public String url;
         public String filename;
         public boolean isChecked;
 
-        public GalleryImage(String url, String filename) {
+        public GalleryImage(String key, String url, String filename) {
+            this.key = key;
             this.url = url;
             this.filename = filename;
             this.isChecked = false;
@@ -702,6 +642,14 @@ public class GalleryActivity extends AppCompatActivity {
             this.url = url;
             this.filename = filename;
             this.isChecked = isChecked;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
         }
 
         public String getUrl() {
