@@ -31,6 +31,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -264,20 +265,55 @@ public class GalleryActivity extends AppCompatActivity {
         return super.onSupportNavigateUp();
     }
 
+    /* long click 수정 시 작동할 함수들 */
     void onClick(View v) {
-
         switch (v.getId()) {
-            case R.id.button_remove_selected:
+            case R.id.button_select_all:        //전체선택
+                for (int i = 0; i < albumList.size(); i++) {
+                    albumList.get(i).isChecked = true;
+                }
+                gridAdapter.notifyDataSetChanged();
+                break;
 
-                for(int i=0; i<albumList.size();i++){
-                    if (albumList.get(i).isChecked()){
-                        myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
-                        albumList.remove(i);
-                        i--;
+            case R.id.button_select_all_false:  //전체선택취소
+                for (int i = 0; i < albumList.size(); i++) {
+                    albumList.get(i).isChecked = false;
+                }
+                gridAdapter.notifyDataSetChanged();
+                break;
+
+            case R.id.button_remove_selected:   //선택 삭제
+
+                /* 대화상자 생성 시작 */
+                AlertDialog.Builder bld;
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("정말로 삭제하시겠습니까?");
+                bld.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int j) {
+                        /* 삭제 시작 */
+                        for (int i = 0; i < albumList.size(); i++) {
+                            if (albumList.get(i).isChecked()) {
+                                myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
+                                albumList.remove(i);
+                                i--;
+                            }
+                        }
+                        gridAdapter.notifyDataSetChanged();
+                    }
+                });
+                bld.setNegativeButton("취소", null);
+                bld.show();
+                break;
+
+            case R.id.button_make_thumnail:     //해당 사진을 썸내일로
+                for (int i = 0; i < albumList.size(); i++) {
+                    if (albumList.get(i).isChecked()) {
+                        myRef.child(mAlbumKey).child("thumbnail").setValue(albumList.get(i).getUrl());
+                        break;
                     }
                 }
                 gridAdapter.notifyDataSetChanged();
-
                 break;
         }
     }

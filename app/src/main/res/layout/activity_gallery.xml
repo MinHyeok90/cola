@@ -34,26 +34,36 @@
         android:layout_alignParentBottom="true"
         >
         <Button
-            android:id="@+id/button_selectmode"
-            android:text="취소"
-            android:layout_height="match_parent"
-            android:layout_width="wrap_content"
-            android:textColor="@android:color/black"
-            />
-        <Button
-            android:id="@+id/button_remove_selected"
-            android:text="선택삭제"
+            android:id="@+id/button_select_all"
+            android:text="전체 선택"
             android:layout_height="match_parent"
             android:layout_width="wrap_content"
             android:textColor="@android:color/black"
             android:onClick="onClick"
             />
         <Button
-            android:id="@+id/button_select_all"
-            android:text="전체 선택"
+            android:id="@+id/button_select_all_false"
+            android:text="전체 취소"
             android:layout_height="match_parent"
             android:layout_width="wrap_content"
             android:textColor="@android:color/black"
+            android:onClick="onClick"
+            />
+        <Button
+            android:id="@+id/button_remove_selected"
+            android:text="선택 삭제"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:textColor="@android:color/black"
+            android:onClick="onClick"
+            />
+        <Button
+            android:id="@+id/button_make_thumnail"
+            android:text="섬네일 지정"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:textColor="@android:color/black"
+            android:onClick="onClick"
             />
     </LinearLayout>
 
