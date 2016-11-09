@@ -102,8 +102,9 @@ public class AddNewMemberActivity extends BaseActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        mUserArray.clear();
-        mPartyUser.clear();
+        //mUserArray.clear();
+        //mPartyUser.clear();
+
         //initFriend();
         mAdapter.notifyDataSetChanged();
     }

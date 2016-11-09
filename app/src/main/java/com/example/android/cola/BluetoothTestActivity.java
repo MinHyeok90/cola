@@ -73,6 +73,7 @@ public class BluetoothTestActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bluetooth_test);
 
+        getSupportActionBar().setTitle("BlueTooth 설정");
         /* 안드로이드 6.0 이후 내부 저장소 접근하려면 권한 승인 필요요 */
         // Here, thisActivity is the current activity
         if (ContextCompat.checkSelfPermission(BluetoothTestActivity.this,

@@ -34,7 +34,7 @@ public class Album {
         this.owner = owner;
 
         if(thumbnail == null){
-            this.thumbnail = "DEFALUT";
+            this.thumbnail = "DEFAULT";
         }else {
             this.thumbnail = thumbnail;
         }
