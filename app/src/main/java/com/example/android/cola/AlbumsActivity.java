@@ -4,7 +4,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.drm.DrmManagerClient;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,6 +24,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -101,8 +107,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     public GridView mGridView;
     public GridAdapter mGridAdapter;
     public final String TAG = "AlbumActivity";
-    private Boolean isMine = false;
-    private Button btnrefresh;
 
 
     final List albumKeyList = new ArrayList();
@@ -145,7 +149,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         mGridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls, albumNameList,albumDateList);
         mGridView.setAdapter(mGridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
 
-        btnrefresh = (Button)findViewById(R.id.album_btrefresh);
         //앨범 클릭시 동작
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -180,7 +183,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
                     //앨범 참여자 중에 자신이 있는지 비교한 후 add함
                     //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
-                    isMine = false;
 
                     mUser = FirebaseAuth.getInstance().getCurrentUser();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
@@ -222,14 +224,15 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
                     mGridAdapter.notifyDataSetChanged();
 
-                    GridView gv = (GridView) findViewById(R.id.gridview);
+                    ImageView lv = (ImageView)findViewById(R.id.imageview3);
+                    //512 415
+
                     //만일 속한 그룹이 하나도 없다면
                     if (albumKeyList.size() == 0){
-                        gv.setBackgroundResource(R.drawable.noitems);
-//                        gv.setLayoutParams(new GridView.LayoutParams(, GridView.LayoutParams.WRAP_CONTENT));
+                        lv.setVisibility(View.VISIBLE);
+
                     }else{
-                        gv.setBackgroundResource(0);
-//                        gv.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, GridView.LayoutParams.MATCH_PARENT));
+                        lv.setVisibility(View.GONE);
                     }
                 }
 
@@ -241,17 +244,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         );
     }
 
-
-    public void onClick(View view)
-    {
-        isMine = false;
-        if(view.getId() == R.id.album_btrefresh)
-        {
-            //Log.d(TAG, "동기화버튼 클릭");
-            mUser = FirebaseAuth.getInstance().getCurrentUser();
-            //getAlbumList();
-        }
-    }
 
     @Override
     protected void onStart() {
@@ -270,8 +262,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
                         //앨범 참여자 중에 자신이 있는지 비교한 후 add함
                         //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
-                        isMine = false;
-
                         mUser = FirebaseAuth.getInstance().getCurrentUser();
                         for (DataSnapshot child : dataSnapshot.getChildren()) {
                             albumParty = "";
@@ -481,7 +471,12 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             if (view==null)
                 view = layoutInflater.inflate(layout, null);
             // Put it in the image view
-
+//            Boolean isItem = true;
+//            if(thumnailList.size() == 0)
+//            {
+//                isItem = false;
+//            }
+            //final ImageView imageView =(ImageView) view.findViewById(R.drawable.noitems);
             final ImageView imageView = (ImageView) view.findViewById(R.id.albumThumbnailImage);
             final long MAX_BYTE = 1024;
 
