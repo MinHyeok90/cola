@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -130,6 +131,8 @@ public class AddNewMemberActivity extends BaseActivity{
 //                }
 //            }
             //지워질 애들이 사실은 party원들
+
+            //action_show_participants버튼 recommit
             if(mMenu.equals("party"))
             {
                 mUserArray.clear();
@@ -139,6 +142,7 @@ public class AddNewMemberActivity extends BaseActivity{
             }
 
             mAdapter.notifyDataSetChanged();
+            //action_show_participants버튼 recommit
         }
         @Override
         public void onCancelled(DatabaseError databaseError) {
@@ -160,6 +164,18 @@ public class AddNewMemberActivity extends BaseActivity{
 //            Log.w(TAG, "getUser:onCancelled", databaseError.toException());
 //        }
 //    };
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                // NavUtils.navigateUpFromSameTask(this);
+                finish();
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
     ChildEventListener memberListener = new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {

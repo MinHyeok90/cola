@@ -376,10 +376,12 @@ public class GalleryActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
             case R.id.action_show_participants:
+                //action_show_participants버튼 recommit
                 Intent i = new Intent(this, AddNewMemberActivity.class);
                 i.putExtra("albumkey",mAlbumKey);
                 i.putExtra("menu","party");
                 startActivity(i);
+                //action_show_participants버튼 recommit
 
                 return true;
             case R.id.action_edit_album_title:
