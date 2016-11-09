@@ -265,6 +265,38 @@ public class GalleryActivity extends AppCompatActivity {
         mReference.addListenerForSingleValueEvent(valueEventListener);
 
         iv = (ImageView) findViewById(R.id.emptyGallery);
+
+        //이미지 삭제 리스너
+        Button btnRemove = (Button)findViewById(R.id.button_remove_selected);
+        btnRemove.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                /* 대화상자 생성 시작 */
+                new AlertDialog.Builder(GalleryActivity.this)
+                    .setTitle("정말로 삭제하시겠습니까?")
+                    .setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialogInterface, int j) {
+                        /* 삭제 시작 */
+                        for (int i = 0; i < albumList.size(); i++) {
+                            if (albumList.get(i).isChecked()) {
+                                myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
+                                albumList.remove(i);
+                                i--;
+                            }
+                        }
+                        imageBool();//emptyGallery 여부
+                        gridAdapter.notifyDataSetChanged();
+                    }
+                })
+                .setNegativeButton("취소", new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                })
+                .show();
+            }
+        });
     }
 
     @Override
@@ -290,30 +322,8 @@ public class GalleryActivity extends AppCompatActivity {
                 imageBool();//emptyGallery 여부
                 gridAdapter.notifyDataSetChanged();
                 break;
-            case R.id.button_remove_selected:   //선택 삭제
+//            case R.id.button_remove_selected:   //선택 삭제 -> 리스너로 구현
 
-                /* 대화상자 생성 시작 */
-                AlertDialog.Builder bld;
-                bld = new AlertDialog.Builder(this);
-                bld.setTitle("정말로 삭제하시겠습니까?");
-                bld.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int j) {
-                        /* 삭제 시작 */
-                        for (int i = 0; i < albumList.size(); i++) {
-                            if (albumList.get(i).isChecked()) {
-                                myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
-                                albumList.remove(i);
-                                i--;
-                            }
-                        }
-                        imageBool();//emptyGallery 여부
-                        gridAdapter.notifyDataSetChanged();
-                    }
-                });
-                bld.setNegativeButton("취소", null);
-                bld.show();
-                break;
 
             case R.id.button_make_thumnail:     //해당 사진을 썸내일로
                 for (int i = 0; i < albumList.size(); i++) {
@@ -450,7 +460,6 @@ public class GalleryActivity extends AppCompatActivity {
                 bld = new AlertDialog.Builder(this);
                 bld.setTitle("앨범 이름 변경");
                 bld.setView(input);                                 //EditText 장착
-                bld.setIcon(R.drawable.imoticon1);
                 bld.setPositiveButton("변경",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -471,15 +480,13 @@ public class GalleryActivity extends AppCompatActivity {
                 /* 대화상자 재료 준비 */
                 final TextView output = new TextView(this);
                 output.setText("이 앨범을 더 이상 보지 않으시겠습니까?");
-                output.setTextSize(24);
-                output.setTextColor(Color.RED);
-                output.setGravity(Gravity.CENTER);
+                output.setTextSize(16);
+                output.setPadding(24,24,24,24);
 
                 /* 대화상자 생성 시작*/
                 bld = new AlertDialog.Builder(this);
                 bld.setTitle("앨범에서 나가기");
                 bld.setView(output);                //TextView 장착
-                bld.setIcon(R.drawable.imoticon1);
                 bld.setPositiveButton("앨범에서 나가기",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
@@ -620,7 +627,7 @@ public class GalleryActivity extends AppCompatActivity {
                     final int totalCount = total;
 
                     BitmapFactory.Options options = new BitmapFactory.Options();
-                    options.inSampleSize = 4;
+                    options.inSampleSize = 1;
 
                     Bitmap src = null;
                     try {
@@ -631,7 +638,7 @@ public class GalleryActivity extends AppCompatActivity {
 
                     float ratio = (float)src.getHeight()/(float)src.getWidth();
                     //Bitmap src = BitmapFactory.decodeFile(imagePath, options);
-                    Bitmap resized = Bitmap.createScaledBitmap(src, 100, (int)(100.0*ratio), true);
+                    Bitmap resized = Bitmap.createScaledBitmap(src, 512, (int)(512.0*ratio), true);
 
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     resized.compress(Bitmap.CompressFormat.JPEG, 100, baos);
