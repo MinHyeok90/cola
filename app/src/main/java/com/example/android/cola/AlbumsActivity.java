@@ -1,12 +1,10 @@
 package com.example.android.cola;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -25,18 +23,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -49,8 +39,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static android.R.attr.data;
 /*
  * Created by 김민혁 on 2016-09-15
  *  앨범집 activity.
@@ -96,6 +84,7 @@ import static android.R.attr.data;
  *
  * Modified by 김민혁 on 2016-11-08
  *  처음으로 앨범 생성 시, 임시 파일을 넣지 말고 아직 이미지 없음을 출력.
+ *  no image는 내부 drawable에 있는 no_picture를 사용하도록 수정
  *
  */
 
@@ -215,6 +204,8 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                                         albumNameList.add(albumName);
                                         albumDateList.add(albumDate);
                                         thumbnailUrls.add(albumImgUrl);
+                                        //만일 이미지가 없다면, no_picture 이미지를 출력한다.(아답터에서 no_picture이미지 할당)
+
                                         albumOwnerList.add(albumOwner);
                                         Log.w(TAG, "albumName : " + albumName);
                                     }
@@ -233,6 +224,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             }
         );
     }
+
 
     public void onClick(View view)
     {
@@ -271,13 +263,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 bld.setPositiveButton("생성",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        /* 앨범생성 test용 데이터생성 */
-                        Map<String,Object> albumhash = new HashMap<String, Object>();
-                        Map<String,Object> filelisthash = new HashMap<String, Object>();
-                        String uid = mUser.getUid();
-                        ColaImage c = new ColaImage("newFile","https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/1%2FP60920-223052.jpg?alt=media&token=8941d7a6-dcf7-417d-a81c-869fd937f465", mUser.getUid());
-                        filelisthash.put("1",c);
-
                         /* 저장 시작 */
                         Long date = new Date().getTime();
 //                        setContentView(R.layout.dialog_new_album_layout);
@@ -405,7 +390,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     .load(getItem(i))
                     .centerCrop()
                     .override(256,256)
-                    .error(R.drawable.ic_action_name)
+                    .error(R.drawable.no_picture)
                     .into(imageView);
 
             final TextView titleView = (TextView) view.findViewById(R.id.albumThumbnailTitle);

@@ -34,7 +34,7 @@ public class Album {
         this.owner = owner;
 
         if(thumbnail == null){
-            this.thumbnail = "https://firebasestorage.googleapis.com/v0/b/cola-b6336.appspot.com/o/no_picture.png?alt=media&token=2f9c3a39-9a7f-4b49-94bc-4be00e6a83f1";
+            this.thumbnail = "DEFALUT";
         }else {
             this.thumbnail = thumbnail;
         }
