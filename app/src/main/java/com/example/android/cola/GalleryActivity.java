@@ -220,17 +220,6 @@ public class GalleryActivity extends AppCompatActivity {
             }
         });
 
-        /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });*/
         /*
         * filelist 변경될 때마다 호출됨
         */
@@ -481,50 +470,44 @@ public class GalleryActivity extends AppCompatActivity {
             case R.id.action_exit_album:
                 /* 나가기 버튼 클릭시 */
                 /* 대화상자 재료 준비 */
-                final TextView output = new TextView(this);
-                output.setText("이 앨범을 더 이상 보지 않으시겠습니까?");
-                output.setTextSize(16);
-                output.setPadding(24,24,24,24);
 
-                /* 대화상자 생성 시작*/
-                bld = new AlertDialog.Builder(this);
-                bld.setTitle("앨범에서 나가기");
-                bld.setView(output);                //TextView 장착
-                bld.setPositiveButton("앨범에서 나가기",new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                /* 대화상자 생성 시작 */
+                new AlertDialog.Builder(GalleryActivity.this)
+                    .setTitle("정말로 앨범에서 나가시겠습니까?")
+                    .setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialogInterface, int j) {
+
 //                        String owner = myRef.child(mAlbumKey).child("owner");
                         /* 이탈하기 */
 
-                        myRef.child(mAlbumKey).child("participants").child(mUser.getUid()).removeValue();
-                        myRef.child(mAlbumKey).child("participants").addValueEventListener(new ValueEventListener() {
-                            @Override
-                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                String uid="";
-                                partyCount = (int)dataSnapshot.getChildrenCount();
-                                Log.i(TAG,"data0수"+partyCount);
-                                if(partyCount == 0)
-                                {
+                            myRef.child(mAlbumKey).child("participants").child(mUser.getUid()).removeValue();
+                            myRef.child(mAlbumKey).child("participants").addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    String uid="";
+                                    partyCount = (int)dataSnapshot.getChildrenCount();
+                                    Log.i(TAG,"data0수"+partyCount);
+                                    if(partyCount == 0)
+                                    {
                                     /* 참여자가 모두 없어지면 앨범이 없어짐:DB */
-                                    myRef.child(mAlbumKey).removeValue();
-                                }else{
+                                        myRef.child(mAlbumKey).removeValue();
+                                    }else{
                                     /* 주인장이 없어지면 주인장을 바꿈*/
-                                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-                                        uid = child.getKey();
-                                        if(!mAlbumOwner.equals(uid))
-                                        {
-                                            myRef.child(mAlbumKey).child("owner").setValue(uid);
-                                            break;
+                                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                                            uid = child.getKey();
+                                            if(!mAlbumOwner.equals(uid))
+                                            {
+                                                myRef.child(mAlbumKey).child("owner").setValue(uid);
+                                                break;
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            @Override
-                            public void onCancelled(DatabaseError databaseError) {
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
 
-                            }
-                        });
-
+                                }
+                            });
 
 //                        if(partyCount == 0)
 //                        {
@@ -550,14 +533,21 @@ public class GalleryActivity extends AppCompatActivity {
 //                            }
 //                        }
 
-                        Intent intent = new Intent(activity, AlbumsActivity.class);
-                        startActivity(intent);
+                            Intent intent = new Intent(activity, AlbumsActivity.class);
+                            startActivity(intent);
                         /* Group 저장 데이터 및 검색 기준 우선 설정 후 구현 */
 //                        groupRef.child(mAlbumKey).child()
-                    }
-                });
-                bld.setNegativeButton("취소",null);
-                bld.show();
+
+                        }
+                    })
+                    .setNegativeButton("취소", new DialogInterface.OnClickListener(){
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    })
+                    .show();
+
                 return true;
 
             case R.id.action_invite:
