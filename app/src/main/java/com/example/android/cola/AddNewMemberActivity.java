@@ -3,6 +3,7 @@ package com.example.android.cola;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -45,6 +46,9 @@ public class AddNewMemberActivity extends BaseActivity{
     private FirebaseUser mUser;
 
 
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
+
     private String mAlbumkey;
     private String mMenu;
 
@@ -53,7 +57,22 @@ public class AddNewMemberActivity extends BaseActivity{
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_addnewmember);
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener(){
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
+                mUser = firebaseAuth.getCurrentUser();
+                if (mUser != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
+                    initFriend();
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
+            }
+        };
         Intent intent = getIntent();
         mAlbumkey = intent.getStringExtra("albumkey");
         mMenu = intent.getStringExtra("menu");         //party에서 온 것인지
@@ -85,7 +104,7 @@ public class AddNewMemberActivity extends BaseActivity{
         super.onResume();
         mUserArray.clear();
         mPartyUser.clear();
-        initFriend();
+        //initFriend();
         mAdapter.notifyDataSetChanged();
     }
     @Override
@@ -93,7 +112,7 @@ public class AddNewMemberActivity extends BaseActivity{
         super.onStart();
 //        mUserArray.clear();
 //        mPartyUser.clear();
-//        initFriend();
+        mAuth.addAuthStateListener(mAuthListener);
 //        mAdapter.notifyDataSetChanged();
     }
     public void initFriend()
