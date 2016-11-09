@@ -147,8 +147,8 @@ public class GalleryActivity extends AppCompatActivity {
 
         DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
 
-        if(!mSelectMode){
-            LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+        if (!mSelectMode) {
+            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.selectedmenu);
             linearLayout.setVisibility(View.GONE);
         }
 
@@ -165,11 +165,10 @@ public class GalleryActivity extends AppCompatActivity {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(mSelectMode){
+                if (mSelectMode) {
                     albumList.get(position).setChecked(!albumList.get(position).isChecked());
                     gridAdapter.notifyDataSetChanged();
-                }
-                else {
+                } else {
                     String uri = albumList.get(position).getUrl();// .toString();
                     Intent intent = new Intent(activity, DetailActivity.class);
 
@@ -178,20 +177,20 @@ public class GalleryActivity extends AppCompatActivity {
                 }
             }
         });
-        mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+        mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                if(!mSelectMode) {
+                if (!mSelectMode) {
                     mSelectMode = true;
-                    LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.selectedmenu);
                     linearLayout.setVisibility(View.VISIBLE);
                     gridAdapter.notifyDataSetChanged();
 
-                }else{
+                } else {
                     mSelectMode = false;
-                    LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.selectedmenu);
                     linearLayout.setVisibility(View.INVISIBLE);
-                    for(GalleryImage i : albumList){
+                    for (GalleryImage i : albumList) {
                         i.setChecked(false);
                     }
                     gridAdapter.notifyDataSetChanged();
@@ -207,7 +206,7 @@ public class GalleryActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //썸네일 정보를 읽음. 앨범을 삭제할 경우, 썸네일이 null로 반환되므로 null인지 확인 후 toString()수행.
                 Object thumb = dataSnapshot.child("thumbnail").getValue();
-                if(thumb != null)
+                if (thumb != null)
                     mThumbnail = thumb.toString();
             }
 
@@ -216,7 +215,6 @@ public class GalleryActivity extends AppCompatActivity {
 
             }
         });
-        iv = (ImageView)findViewById(R.id.emptyGallery);
 
         /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
             @Override
@@ -236,7 +234,6 @@ public class GalleryActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 albumList.clear();
-                //filenameList.clear();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     if (child != null) {
                         //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
@@ -246,17 +243,13 @@ public class GalleryActivity extends AppCompatActivity {
                         */
                         String fileUri = child.child("url").getValue().toString();
                         String fileName = child.child("filename").getValue().toString();
-                        albumList.add(new GalleryImage(child.getKey(),fileUri, fileName));
+                        albumList.add(new GalleryImage(child.getKey(), fileUri, fileName));
                         //filenameList.add(fileName);
                     }
                 }
-                if(albumList.size() == 0)
-                {
-                    iv.setVisibility(View.VISIBLE);
-                }else
-                {
-                    iv.setVisibility(View.GONE);
-                }
+
+                ////emptyGallery 여부
+                imageBool();
                 gridAdapter.notifyDataSetChanged();
 
             }
@@ -266,9 +259,10 @@ public class GalleryActivity extends AppCompatActivity {
                 Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                 // ...
             }
-        } ;
+        };
         mReference.addListenerForSingleValueEvent(valueEventListener);
 
+        iv = (ImageView) findViewById(R.id.emptyGallery);
     }
 
     @Override
@@ -285,9 +279,11 @@ public class GalleryActivity extends AppCompatActivity {
                     if (albumList.get(i).isChecked()){
                         myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
                         albumList.remove(i);
+
                         i--;
                     }
                 }
+                imageBool();//emptyGallery 여부
                 gridAdapter.notifyDataSetChanged();
 
                 break;
@@ -527,6 +523,9 @@ public class GalleryActivity extends AppCompatActivity {
                 Intent intent2 = new Intent(this, ImagePickActivity.class);
                 intent2.putExtra("startDate", mStartDate);
                 startActivityForResult(intent2, REQ_CODE_PICK_PICTURE);
+
+                gridAdapter.notifyDataSetChanged();
+                //imageBool();//emptyGallery여부
                 /*Intent i = new Intent(Intent.ACTION_PICK);
                 i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 i.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
@@ -544,6 +543,15 @@ public class GalleryActivity extends AppCompatActivity {
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
+        }
+    }
+    //이미지가 보여질 것인지 말 것인지 보여줌
+    public void imageBool()
+    {
+        if (albumList.size() == 0) {
+            iv.setVisibility(View.VISIBLE);
+        } else {
+            iv.setVisibility(View.GONE);
         }
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -621,6 +629,7 @@ public class GalleryActivity extends AppCompatActivity {
                             }
 
                             albumList.add(new GalleryImage(r.getKey(), downloadUrl.toString(), filename));
+                            imageBool();
                             gridAdapter.notifyDataSetChanged();
                         }
                     }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
