@@ -19,21 +19,20 @@
         android:layout_alignParentStart="true" />
 
 
-    <TextView
-        android:text="TextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/bluetoothTestTextView"
-        android:layout_below="@+id/bluetoothDisconnectButton"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="58dp" />
-
     <Button
         android:text="db 확인"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/check_db"
         android:layout_below="@+id/bluetoothConnectButton"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        android:text="친구 분석"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/find_friends"
+        android:layout_below="@+id/drop_db"
         android:layout_alignParentStart="true" />
 
     <Button
@@ -51,4 +50,12 @@
         android:id="@+id/drop_db"
         android:layout_below="@+id/bluetoothDisconnectButton"
         android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bluetoothTestTextView"
+        android:layout_below="@+id/find_friends"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>
