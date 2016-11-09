@@ -427,8 +427,15 @@ public class ImagePickActivity extends AppCompatActivity {
                 }
                 gridAdapter.notifyDataSetChanged();
                 return true;
+
+            case android.R.id.home:
+                // NavUtils.navigateUpFromSameTask(this);
+                finish();
+                return true;
+            
             default:
                 return true;
+
         }
     }
 }

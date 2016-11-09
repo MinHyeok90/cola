@@ -83,6 +83,9 @@ import static com.google.android.gms.internal.zzaoj.bld;
  *
  * Modify by 김민혁 on 2016-11-08
  *  사진 업로드 시 썸네일이 DEFALUT면 썸네일 Url 변경
+ *
+ * Modify by 김민혁 on 2016-11-09
+ *  앨범 삭제시 storage에서도 사진 모두 삭제
  */
 
 public class GalleryActivity extends AppCompatActivity {
@@ -376,6 +379,12 @@ public class GalleryActivity extends AppCompatActivity {
         switch (item.getItemId()) {
 
             case R.id.action_show_participants:
+                //action_show_participants버튼 recommit
+                Intent i = new Intent(this, AddNewMemberActivity.class);
+                i.putExtra("albumkey",mAlbumKey);
+                i.putExtra("menu","party");
+                startActivity(i);
+                //action_show_participants버튼 recommit
 
                 return true;
             case R.id.action_edit_album_title:
@@ -438,10 +447,11 @@ public class GalleryActivity extends AppCompatActivity {
                                 partyCount = (int)dataSnapshot.getChildrenCount();
                                 Log.i(TAG,"data0수"+partyCount);
                                 if(partyCount == 0)
-                                {/* 참여자가 모두 없어지면 앨범이 없어짐 */
+                                {
+                                    /* 참여자가 모두 없어지면 앨범이 없어짐:DB */
                                     myRef.child(mAlbumKey).removeValue();
-                                }else
-                                {/* 주인장이 없어지면 주인장을 바꿈*/
+                                }else{
+                                    /* 주인장이 없어지면 주인장을 바꿈*/
                                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                                         uid = child.getKey();
                                         if(!mAlbumOwner.equals(uid))
@@ -451,13 +461,37 @@ public class GalleryActivity extends AppCompatActivity {
                                         }
                                     }
                                 }
-
                             }
                             @Override
                             public void onCancelled(DatabaseError databaseError) {
 
                             }
                         });
+
+
+//                        if(partyCount == 0)
+//                        {
+//                            /* 참여자가 모두 없어지면 앨범이 없어짐:File */
+//                            for(int j=0; j<filenameList.size();++j){
+//                                // Create a reference to the file to delete
+//                                StorageReference desertRef = storageRef.child(mAlbumKey+"/"+filenameList.get(j));
+//
+//                                // Delete the file
+//                                desertRef.delete().addOnSuccessListener(new OnSuccessListener() {
+//                                    @Override
+//                                    public void onSuccess(Object object) {
+//                                        // File deleted successfully
+//                                        Log.i(TAG,"Remove File Success: mAlbumKey:"+mAlbumKey);
+//                                    }
+//                                }).addOnFailureListener(new OnFailureListener() {
+//                                    @Override
+//                                    public void onFailure(@NonNull Exception exception) {
+//                                        // Uh-oh, an error occurred!
+//                                        Log.i(TAG,"Remove File Fail: mAlbumKey:"+mAlbumKey);
+//                                    }
+//                                });
+//                            }
+//                        }
 
                         Intent intent = new Intent(activity, AlbumsActivity.class);
                         startActivity(intent);
@@ -472,6 +506,7 @@ public class GalleryActivity extends AppCompatActivity {
             case R.id.action_invite:
                 Intent intent = new Intent(this, AddNewMemberActivity.class);
                 intent.putExtra("albumkey",mAlbumKey);
+                intent.putExtra("menu","invite");
                 startActivity(intent);
                 return true;
 
@@ -552,6 +587,9 @@ public class GalleryActivity extends AppCompatActivity {
                     }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                         @Override
                         public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                            TextView progressView = (TextView) findViewById(R.id.progress); //khlee
+                            progressView.setVisibility(View.GONE); //khlee
+
                             // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
                             Uri downloadUrl = taskSnapshot.getDownloadUrl();
 
@@ -572,9 +610,10 @@ public class GalleryActivity extends AppCompatActivity {
                         @Override
                         public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
                             TextView progressView = (TextView) findViewById(R.id.progress);
+                            progressView.setVisibility(View.VISIBLE); //khlee
                             double progress = 100.0 * count * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount()) / totalCount;
                             System.out.println("Upload is " + progress + "% done");
-                            progressView.setText("uploading: " + progress + "%");
+                            progressView.setText("업로딩: " + progress + "%");
                         }
                     });
                 }

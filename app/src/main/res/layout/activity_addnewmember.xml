@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:descendantFocusability="blocksDescendants">
 
     <ListView
@@ -10,4 +11,9 @@
         android:id="@+id/lvMembers"
         android:layout_margin="8dp" />
 
+    <Button
+        android:id="@+id/btnMembers"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        />
 </LinearLayout>

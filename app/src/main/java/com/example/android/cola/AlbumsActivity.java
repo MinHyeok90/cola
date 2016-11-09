@@ -3,10 +3,12 @@ package com.example.android.cola;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.drm.DrmManagerClient;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -39,6 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 /*
  * Created by 김민혁 on 2016-09-15
  *  앨범집 activity.
@@ -118,10 +121,12 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     private String albumParty;
     private String ownUid;
 
+    //private OnValueEventHandler mHandler = null;
+    private Iterable<DataSnapshot> snapshots = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        //mHandler = new OnValueEventHandler();
        //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         setContentView(R.layout.activity_albums);
         Intent it = getIntent();
@@ -145,10 +150,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(AlbumsActivity.this, i + "번째 그림 선택",
-                        Toast.LENGTH_SHORT).show();
-
-                //GalleryActivity로 연결(DB 연동X)
+                //GalleryActivity로 연결
                 Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
                 intent.putExtra("albumKey",albumKeyList.get(i).toString());
                 intent.putExtra("albumName",albumNameList.get(i).toString());
@@ -157,7 +159,8 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 startActivity(intent);
             }
         });
-
+        //mRef.addValueEventListener(mHandler);
+        //getAlbumList();
         getAlbumList();
     }
 
@@ -178,6 +181,8 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     //앨범 참여자 중에 자신이 있는지 비교한 후 add함
                     //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
                     isMine = false;
+
+                    mUser = FirebaseAuth.getInstance().getCurrentUser();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
                         albumParty = "";
                         if (child != null) {
@@ -193,13 +198,13 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                                 albumParty = "";
                                 if (child.child("participants").child(mUser.getUid()).getValue() != null){
                                     albumParty = child.child("participants").child(ownUid).getValue().toString();
-                                    Log.w(TAG,"key : "+albumParty);
+                                    //Log.w(TAG,"key : "+albumParty);
                                 }
                                 if (child.child("participants").child(mUser.getUid()).getKey() != null) {
-                                    Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
+                                    //Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
                                     if (albumParty.equals(mUser.getEmail().toString())) {
-                                        Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
-                                        Log.w(TAG, "key : " + albumParty);
+                                        //Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
+                                        //Log.w(TAG, "key : " + albumParty);
                                         albumKeyList.add(albumKey);
                                         albumNameList.add(albumName);
                                         albumDateList.add(albumDate);
@@ -207,14 +212,25 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                                         //만일 이미지가 없다면, no_picture 이미지를 출력한다.(아답터에서 no_picture이미지 할당)
 
                                         albumOwnerList.add(albumOwner);
-                                        Log.w(TAG, "albumName : " + albumName);
+                                        //Log.w(TAG, "albumName : " + albumName);
                                     }
                                 }
                             }
 
                         }
                     }
+
                     mGridAdapter.notifyDataSetChanged();
+
+                    GridView gv = (GridView) findViewById(R.id.gridview);
+                    //만일 속한 그룹이 하나도 없다면
+                    if (albumKeyList.size() == 0){
+                        gv.setBackgroundResource(R.drawable.noitems);
+//                        gv.setLayoutParams(new GridView.LayoutParams(, GridView.LayoutParams.WRAP_CONTENT));
+                    }else{
+                        gv.setBackgroundResource(0);
+//                        gv.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, GridView.LayoutParams.MATCH_PARENT));
+                    }
                 }
 
                 @Override
@@ -228,14 +244,89 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
     public void onClick(View view)
     {
-
         isMine = false;
         if(view.getId() == R.id.album_btrefresh)
         {
-            Log.d(TAG, "동기화버튼 클릭");
+            //Log.d(TAG, "동기화버튼 클릭");
             mUser = FirebaseAuth.getInstance().getCurrentUser();
-            getAlbumList();
+            //getAlbumList();
         }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //앨범 list 가져오기
+        mRef.addValueEventListener(
+                new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        albumKeyList.clear();
+                        albumNameList.clear();
+                        albumDateList.clear();
+                        thumbnailUrls.clear();
+                        albumOwnerList.clear();
+                        //FireBase의 앨범 추가
+                        //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
+                        //앨범 참여자 중에 자신이 있는지 비교한 후 add함
+                        //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
+                        isMine = false;
+
+                        mUser = FirebaseAuth.getInstance().getCurrentUser();
+                        for (DataSnapshot child : dataSnapshot.getChildren()) {
+                            albumParty = "";
+                            if (child != null) {
+                                albumKey = child.getKey().toString();
+                                albumName = child.child("name").getValue().toString();
+                                albumDate = child.child("created_at").getValue().toString();
+                                albumImgUrl = child.child("thumbnail").getValue().toString();
+                                albumOwner = child.child("owner").getValue().toString();
+
+                                if(mUser==null){ownUid= "";}
+                                else{
+                                    ownUid = mUser.getUid();
+                                    albumParty = "";
+                                    if (child.child("participants").child(mUser.getUid()).getValue() != null){
+                                        albumParty = child.child("participants").child(ownUid).getValue().toString();
+                                        //Log.w(TAG,"key : "+albumParty);
+                                    }
+                                    if (child.child("participants").child(mUser.getUid()).getKey() != null) {
+                                        //Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
+                                        if (albumParty.equals(mUser.getEmail().toString())) {
+                                            //Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
+                                            //Log.w(TAG, "key : " + albumParty);
+                                            albumKeyList.add(albumKey);
+                                            albumNameList.add(albumName);
+                                            albumDateList.add(albumDate);
+                                            thumbnailUrls.add(albumImgUrl);
+                                            //만일 이미지가 없다면, no_picture 이미지를 출력한다.(아답터에서 no_picture이미지 할당)
+
+                                            albumOwnerList.add(albumOwner);
+                                            //Log.w(TAG, "albumName : " + albumName);
+                                        }
+                                    }
+                                }
+
+                            }
+                        }
+
+                        mGridAdapter.notifyDataSetChanged();
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG,"mRef.addValueEventListener: onCancelled");
+                    }
+                }
+        );
+        //getAlbumList();
+        mGridAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mGridAdapter.notifyDataSetChanged();
     }
 
     /* 메뉴 기능 */
@@ -252,6 +343,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_add_album:
+                mUser = FirebaseAuth.getInstance().getCurrentUser();
                 /* 추가 버튼 클릭시, 대화상자 출력 */
                 AlertDialog.Builder bld = new AlertDialog.Builder(this);
                 bld.setTitle("새 앨범 추가");
@@ -265,12 +357,19 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 저장 시작 */
                         Long date = new Date().getTime();
-//                        setContentView(R.layout.dialog_new_album_layout);
-//                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),null,"True",input.getText().toString(),mUser.getUid(),null);
+                        // newAlbum 매개변수 : String created_at, Map<String, Object> filelist, String isRecording, String name, String owner, String thumbnail
+                        Album newAlbum = new Album(date.toString(), null, "True", input.getText().toString(), mUser.getUid(), null);
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
                         r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
+
+                        //생성된 GalleryActivity로 연결
+                        Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
+                        intent.putExtra("albumKey",r.getKey().toString());
+                        intent.putExtra("albumName",input.getText().toString());
+                        intent.putExtra("albumDate",date.toString());
+                        intent.putExtra("albumOwner",mUser.getUid());
+                        startActivity(intent);
                     }
                 });
                 bld.setNegativeButton("취소",null);
@@ -386,12 +485,22 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             final ImageView imageView = (ImageView) view.findViewById(R.id.albumThumbnailImage);
             final long MAX_BYTE = 1024;
 
-            Glide.with(getApplicationContext())
-                    .load(getItem(i))
-                    .centerCrop()
-                    .override(256,256)
-                    .error(R.drawable.no_picture)
-                    .into(imageView);
+            if (i % 2 == 0) {
+                Glide.with(getApplicationContext())
+                        .load(getItem(i))
+                        .centerCrop()
+                        .override(256, 256)
+                        .error(R.drawable.dummyalbum1)
+                        .into(imageView);
+            }
+            else {
+                Glide.with(getApplicationContext())
+                        .load(getItem(i))
+                        .centerCrop()
+                        .override(256, 256)
+                        .error(R.drawable.dummyalbum2)
+                        .into(imageView);
+            }
 
             final TextView titleView = (TextView) view.findViewById(R.id.albumThumbnailTitle);
             titleView.setText(getTitle(i).toString());

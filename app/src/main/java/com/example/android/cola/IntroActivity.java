@@ -30,7 +30,7 @@ public class IntroActivity extends AppIntro {
                 R.drawable.polaroid,
                 Color.parseColor("#ffffff"), colorPrimary, colorPrimaryDark));
         addSlide(AppIntroFragment.newInstance(getString(R.string.intro2_title), getString(R.string.intro2_desc),
-                R.drawable.friend,
+                R.drawable.auto,
                 Color.parseColor("#ffffff"), colorPrimary, colorPrimaryDark));
 
         setSkipTextTypeface(getResources().getString(R.string.skip));
