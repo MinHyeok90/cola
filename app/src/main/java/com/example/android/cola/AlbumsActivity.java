@@ -456,12 +456,22 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             final ImageView imageView = (ImageView) view.findViewById(R.id.albumThumbnailImage);
             final long MAX_BYTE = 1024;
 
-            Glide.with(getApplicationContext())
-                    .load(getItem(i))
-                    .centerCrop()
-                    .override(256,256)
-                    .error(R.drawable.no_picture)
-                    .into(imageView);
+            if (i % 2 == 0) {
+                Glide.with(getApplicationContext())
+                        .load(getItem(i))
+                        .centerCrop()
+                        .override(256, 256)
+                        .error(R.drawable.dummyalbum1)
+                        .into(imageView);
+            }
+            else {
+                Glide.with(getApplicationContext())
+                        .load(getItem(i))
+                        .centerCrop()
+                        .override(256, 256)
+                        .error(R.drawable.dummyalbum2)
+                        .into(imageView);
+            }
 
             final TextView titleView = (TextView) view.findViewById(R.id.albumThumbnailTitle);
             titleView.setText(getTitle(i).toString());
