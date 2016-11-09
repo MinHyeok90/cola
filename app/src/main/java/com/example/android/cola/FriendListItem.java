@@ -26,6 +26,7 @@ public class FriendListItem {
     public int getRes() {
         return res;
     }
+
     public void setName(String name) {
         this.name = name;
     }

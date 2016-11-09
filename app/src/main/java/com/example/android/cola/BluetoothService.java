@@ -121,7 +121,7 @@ public class BluetoothService extends Service {
 
                 //result.getScanRecord().getServiceData().values();
                 byte[] idBytes = result.getScanRecord().getServiceData(new ParcelUuid(UUID.fromString( "0000950d-0000-1000-8000-00805f9b34fb" ) ));
-                String email = new String(idBytes, Charset.forName("UTF-8") ) + "@google.com";
+                String email = new String(idBytes, Charset.forName("UTF-8") ) + "@gmail.com";
 
                 boolean isEqual = false;
 
