@@ -148,10 +148,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Toast.makeText(AlbumsActivity.this, i + "번째 그림 선택",
-                        Toast.LENGTH_SHORT).show();
-
-                //GalleryActivity로 연결(DB 연동X)
+                //GalleryActivity로 연결
                 Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
                 intent.putExtra("albumKey",albumKeyList.get(i).toString());
                 intent.putExtra("albumName",albumNameList.get(i).toString());
@@ -160,7 +157,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 startActivity(intent);
             }
         });
-        //mRef.addValueEventListener(mHandler);
+
         getAlbumList();
     }
 //class OnValueEventHandler implements ValueEventListener {
@@ -334,13 +331,19 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 저장 시작 */
                         Long date = new Date().getTime();
-//                        setContentView(R.layout.dialog_new_album_layout);
-//                        EditText et = (EditText)bld.findViewById(R.id.new_album_title_edit_text); //다른 layout에 있는 경우 id에 의한 탐색시 무조건 null이 반환됨.
-                        Album newAlbum = new Album(date.toString(),null,"True",input.getText().toString(),mUser.getUid(),null);
+                        // newAlbum 매개변수 : String created_at, Map<String, Object> filelist, String isRecording, String name, String owner, String thumbnail
+                        Album newAlbum = new Album(date.toString(), null, "True", input.getText().toString(), mUser.getUid(), null);
                         DatabaseReference r = mRef.push();
                         r.setValue(newAlbum);
                         r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
 
+                        //생성된 GalleryActivity로 연결
+                        Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
+                        intent.putExtra("albumKey",r.getKey().toString());
+                        intent.putExtra("albumName",input.getText().toString());
+                        intent.putExtra("albumDate",date.toString());
+                        intent.putExtra("albumOwner",mUser.getUid());
+                        startActivity(intent);
                     }
                 });
                 bld.setNegativeButton("취소",null);
