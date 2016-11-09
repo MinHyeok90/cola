@@ -9,6 +9,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.GradientDrawable;
 import android.media.Image;
 import android.net.Uri;
@@ -33,6 +34,7 @@ import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
@@ -105,7 +107,9 @@ public class GalleryActivity extends AppCompatActivity {
     public FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
 
     public final long start = new Date((2016 - 1900), 9, 20, 0, 0, 0).getTime();
-    private final List filenameList = new ArrayList();
+
+    public boolean mSelectMode = false;
+    //private final List filenameList = new ArrayList();
 
     /**
      * 2016.10.27. by 김미래
@@ -120,7 +124,8 @@ public class GalleryActivity extends AppCompatActivity {
     private String mThumbnail = null;
     private String mAlbumOwner = null;
 
-    final List albumList = new ArrayList();
+    final List<GalleryImage> albumList = new ArrayList();
+    final List isCheckedList = new ArrayList();
 
     //0이면 지워져야 하므로
     private int partyCount = -1;
@@ -139,6 +144,11 @@ public class GalleryActivity extends AppCompatActivity {
 
         DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
 
+        if(!mSelectMode){
+            LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+            linearLayout.setVisibility(View.GONE);
+        }
+
         // ActionBar에 타이틀 변경
         getSupportActionBar().setTitle(mAlbumName);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -152,11 +162,39 @@ public class GalleryActivity extends AppCompatActivity {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String uri = albumList.get(position).toString();
-                Intent intent = new Intent(activity, DetailActivity.class);
+                if(mSelectMode){
+                    albumList.get(position).setChecked(!albumList.get(position).isChecked());
+                    gridAdapter.notifyDataSetChanged();
+                }
+                else {
+                    String uri = albumList.get(position).getUrl();// .toString();
+                    Intent intent = new Intent(activity, DetailActivity.class);
 
-                intent.putExtra("url", uri);
-                startActivity(intent);
+                    intent.putExtra("url", uri);
+                    startActivity(intent);
+                }
+            }
+        });
+        mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                if(!mSelectMode) {
+                    mSelectMode = true;
+                    LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+                    linearLayout.setVisibility(View.VISIBLE);
+                    gridAdapter.notifyDataSetChanged();
+
+                }else{
+                    mSelectMode = false;
+                    LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+                    linearLayout.setVisibility(View.INVISIBLE);
+                    for(GalleryImage i : albumList){
+                        i.setChecked(false);
+                    }
+                    gridAdapter.notifyDataSetChanged();
+                }
+
+                return false;
             }
         });
 
@@ -193,7 +231,7 @@ public class GalleryActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 albumList.clear();
-                filenameList.clear();
+                //filenameList.clear();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     if (child != null) {
                         //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
@@ -203,8 +241,8 @@ public class GalleryActivity extends AppCompatActivity {
                         */
                         String fileUri = child.child("url").getValue().toString();
                         String fileName = child.child("filename").getValue().toString();
-                        albumList.add(fileUri);
-                        filenameList.add(fileName);
+                        albumList.add(new GalleryImage(fileUri, fileName));
+                        //filenameList.add(fileName);
                     }
                 }
                 gridAdapter.notifyDataSetChanged();
@@ -310,7 +348,7 @@ public class GalleryActivity extends AppCompatActivity {
         Context context;
         int layout;
         LayoutInflater layoutInflater;
-        List arrayList;
+        List<GalleryImage> arrayList;
         //StorageReference storageReference;
 
         public GridAdapter(Context context, int layout, List arrayList) {
@@ -319,7 +357,6 @@ public class GalleryActivity extends AppCompatActivity {
             this.layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             this.arrayList = arrayList;
             //this.storageReference = storageReference;
-
         }
 
         @Override
@@ -328,7 +365,7 @@ public class GalleryActivity extends AppCompatActivity {
         }
 
         @Override
-        public Object getItem(int i) {
+        public GalleryImage getItem(int i) {
             return arrayList.get(i);
         }
 
@@ -344,10 +381,36 @@ public class GalleryActivity extends AppCompatActivity {
             // Put it in the image view
 
             final ImageView imageView = (ImageView) view.findViewById(R.id.galleryImageView);
+            final TextView checkView = (TextView) view.findViewById(R.id.galleryImageCheck);
+
+            if(mSelectMode){
+                checkView.setVisibility(View.VISIBLE);
+                if(getItem(i).isChecked){
+                    // 이미지 선택 시 색깔, 체크박스 형태 변경경
+                    imageView.setColorFilter(Color.parseColor("#BDBDBD"), PorterDuff.Mode.MULTIPLY);
+                    view.setBackgroundColor(Color.parseColor("#FFFF00"));
+                    checkView.setBackgroundColor(Color.WHITE);
+                    checkView.setTextColor(Color.GREEN);
+
+                }
+                else {
+                    imageView.clearColorFilter();
+                    view.setBackgroundColor(Color.TRANSPARENT);
+                    checkView.setBackgroundColor(Color.TRANSPARENT);
+                    checkView.setTextColor(Color.WHITE);
+                    //checkBox.setChecked(getItem(i).isChecked);
+                }
+            }
+            else{
+                imageView.clearColorFilter();
+                view.setBackgroundColor(Color.TRANSPARENT);
+                checkView.setVisibility(View.INVISIBLE);
+            }
+
             final long MAX_BYTE = 1024;
 
             Glide.with(getApplicationContext())
-                    .load(getItem(i))
+                    .load(getItem(i).getUrl())
                     .centerCrop()
                     .override(256, 256)
                     .error(R.drawable.ic_action_name)
@@ -361,7 +424,6 @@ public class GalleryActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu_gallery, menu);
-        inflater.inflate(R.menu.menu_addpicture, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -608,7 +670,7 @@ public class GalleryActivity extends AppCompatActivity {
                                 myRef.child(mAlbumKey).child("thumbnail").setValue(downloadUrl.toString());
                             }
 
-                            albumList.add(downloadUrl.toString());
+                            albumList.add(new GalleryImage(downloadUrl.toString(), filename));
                             gridAdapter.notifyDataSetChanged();
                         }
                     }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -625,5 +687,45 @@ public class GalleryActivity extends AppCompatActivity {
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+    class GalleryImage{
+        public String url;
+        public String filename;
+        public boolean isChecked;
+
+        public GalleryImage(String url, String filename) {
+            this.url = url;
+            this.filename = filename;
+            this.isChecked = false;
+        }
+        public GalleryImage(String url, String filename, boolean isChecked) {
+            this.url = url;
+            this.filename = filename;
+            this.isChecked = isChecked;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
+
+        public String getFilename() {
+            return filename;
+        }
+
+        public void setFilename(String filename) {
+            this.filename = filename;
+        }
+
+        public boolean isChecked() {
+            return isChecked;
+        }
+
+        public void setChecked(boolean checked) {
+            isChecked = checked;
+        }
     }
 }

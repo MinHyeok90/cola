@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-
     tools:context="com.example.android.cola.GalleryActivity">
 
     <TextView
@@ -25,10 +24,37 @@
         android:gravity="center"
         android:horizontalSpacing="0dp"
         android:numColumns="3"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentEnd="true"
         android:layout_below="@id/progress"
         android:layout_margin="8dp" />
 
+    <LinearLayout
+        android:id="@+id/selectedmenu"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_alignParentBottom="true"
+        >
+        <Button
+            android:id="@+id/button_selectmode"
+            android:text="취소"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:textColor="@android:color/black"
+            />
+        <Button
+            android:id="@+id/button_remove_selected"
+            android:text="선택삭제"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:textColor="@android:color/black"
+            />
+        <Button
+            android:id="@+id/button_select_all"
+            android:text="전체 선택"
+            android:layout_height="match_parent"
+            android:layout_width="wrap_content"
+            android:textColor="@android:color/black"
+            />
+    </LinearLayout>
 
-</LinearLayout>
+
+</RelativeLayout>

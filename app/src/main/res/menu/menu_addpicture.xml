@@ -4,8 +4,16 @@
     tools:context=".GalleryActivity">
     <!-- "Mark Favorite", should appear as action button if possible -->
     <item
-        android:id="@+id/action_addpicture"
-        android:title="사진 추가"
-        app:showAsAction="ifRoom"/>
+        android:id="@+id/action_selectmode"
+        android:title="취소"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_remove_selected"
+        android:title="선택삭제"
+        app:showAsAction="always"/>
+    <item
+        android:id="@+id/action_select_all"
+        android:title="전체"
+        app:showAsAction="always"/>
 
 </menu>
