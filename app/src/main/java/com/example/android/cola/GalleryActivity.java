@@ -195,6 +195,7 @@ public class GalleryActivity extends AppCompatActivity {
                         i.setChecked(false);
                     }
                     gridAdapter.notifyDataSetChanged();
+                    return true;
                 }
 
                 return false;
@@ -306,6 +307,7 @@ public class GalleryActivity extends AppCompatActivity {
                                 i--;
                             }
                         }
+                        imageBool();//emptyGallery 여부
                         gridAdapter.notifyDataSetChanged();
                     }
                 });
