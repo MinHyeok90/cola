@@ -26,7 +26,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
+import android.os.Parcel;
 import android.os.ParcelUuid;
+import android.os.Parcelable;
 import android.os.SystemClock;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
@@ -199,62 +201,9 @@ public class BluetoothTestActivity extends AppCompatActivity {
 
                 List<FriendsDeviceLog> friendsDeviceLogs = mDatabaseOpenHelper.getAllFriendsDeviceLogs();
                 String tvText = "";
-                String start="", end="";
-                boolean flag = false;
-                List<Group> groups = new ArrayList<Group>();
 
-                if(!friendsDeviceLogs.isEmpty()){
-                    List<String> emailList = new ArrayList<String>();
+                List<Group> groups = findFriends(friendsDeviceLogs);
 
-                    for(int i=0; i<friendsDeviceLogs.size(); i++){
-                        FriendsDeviceLog fcur = friendsDeviceLogs.get(i);
-                        // i==0일때 친구가 있으면
-                        if(i==0){
-                            if( !fcur.getUserID().matches(STRING_TRASH)) {
-                                start = fcur.getTimestamp();
-                                flag = true;
-
-                                String curEmail = fcur.getUserID();
-                                if(!emailList.contains(curEmail)) {
-                                    emailList.add(curEmail);
-                                }
-                            }
-                        }
-                        else{ //i > 0
-                            FriendsDeviceLog fprev = friendsDeviceLogs.get(i-1);
-                            // 이전에 친구 없었고 지금 친구 있으면 -- 그롭 시작
-                            if(fprev.getUserID().matches(STRING_TRASH) && !fcur.getUserID().matches(STRING_TRASH)){
-                                // 시작 시간 : 지금
-                                start = fcur.getTimestamp();
-                                flag = true;
-                                String curEmail = fcur.getUserID();
-                                if(!emailList.contains(curEmail)) {
-                                    emailList.add(curEmail);
-                                }
-                            }
-                            // 이전에 친구 있었는데 지금 없으면 -- 그룹 끝
-                            if(!fprev.getUserID().matches(STRING_TRASH) && fcur.getUserID().matches(STRING_TRASH)){
-                                end = fprev.getTimestamp();
-                                flag = false;
-
-                                groups.add(new Group(start, end, emailList));
-                                emailList = new ArrayList<String>();
-                            }
-                        }
-                        if(flag) {
-                            String curEmail = fcur.getUserID();
-                            if(!emailList.contains(curEmail)) {
-                                emailList.add(curEmail);
-                            }
-                            // 마지막 루프인데 flag가 참이면
-                            if (i == friendsDeviceLogs.size() - 1) {
-                                end = fcur.getTimestamp();
-                                groups.add(new Group(start, end, emailList));
-                            }
-
-                        }
-                    }
-                }
                 for(Group g : groups){
                     tvText += g.getStartTime() + " " + g.getEndTime() + "\n";
                     for(String s : g.getNameList()){
@@ -262,50 +211,81 @@ public class BluetoothTestActivity extends AppCompatActivity {
                     }
                     tvText += "\n\n";
                 }
-                mText.setText(tvText);
+                Intent intent = new Intent(getApplicationContext(), MakeAndInviteActivity.class);
+
+                intent.putParcelableArrayListExtra("groups", (ArrayList<? extends Parcelable>) groups);
+                startActivity(intent);
+
             }
         });
 
-    }
 
+    }
+    /* 친구 리스트 만드는 함수 */
+    public List<Group> findFriends(List<FriendsDeviceLog> friendsDeviceLogs){
+        String start="", end="";
+        boolean flag = false;
+        List<Group> groups = new ArrayList<Group>();
+
+        if(!friendsDeviceLogs.isEmpty()){
+            List<String> emailList = new ArrayList<String>();
+
+            for(int i=0; i<friendsDeviceLogs.size(); i++){
+                FriendsDeviceLog fcur = friendsDeviceLogs.get(i);
+                // i==0일때 친구가 있으면
+                if(i==0){
+                    if( !fcur.getUserID().matches(STRING_TRASH)) {
+                        start = fcur.getTimestamp();
+                        flag = true;
+
+                        String curEmail = fcur.getUserID();
+                        if(!emailList.contains(curEmail)) {
+                            emailList.add(curEmail);
+                        }
+                    }
+                }
+                else{ //i > 0
+                    FriendsDeviceLog fprev = friendsDeviceLogs.get(i-1);
+                    // 이전에 친구 없었고 지금 친구 있으면 -- 그롭 시작
+                    if(fprev.getUserID().matches(STRING_TRASH) && !fcur.getUserID().matches(STRING_TRASH)){
+                        // 시작 시간 : 지금
+                        start = fcur.getTimestamp();
+                        flag = true;
+                        String curEmail = fcur.getUserID();
+                        if(!emailList.contains(curEmail)) {
+                            emailList.add(curEmail);
+                        }
+                    }
+                    // 이전에 친구 있었는데 지금 없으면 -- 그룹 끝
+                    if(!fprev.getUserID().matches(STRING_TRASH) && fcur.getUserID().matches(STRING_TRASH)){
+                        end = fprev.getTimestamp();
+                        flag = false;
+
+                        groups.add(new Group(start, end, emailList));
+                        emailList = new ArrayList<String>();
+                    }
+                }
+                if(flag) {
+                    String curEmail = fcur.getUserID();
+                    if(!emailList.contains(curEmail)) {
+                        emailList.add(curEmail);
+                    }
+                    // 마지막 루프인데 flag가 참이면
+                    if (i == friendsDeviceLogs.size() - 1) {
+                        end = fcur.getTimestamp();
+                        groups.add(new Group(start, end, emailList));
+                    }
+
+                }
+
+            }
+        }
+        return groups;
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
     }
 
-    class Group{
-        private String startTime;
-        private String endTime;
-        private List<String> nameList;
 
-        public Group(String startTime, String endTime, List<String> nameList) {
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.nameList = nameList;
-        }
-
-        public String getEndTime() {
-            return endTime;
-        }
-
-        public void setEndTime(String endTime) {
-            this.endTime = endTime;
-        }
-
-        public List<String> getNameList() {
-            return nameList;
-        }
-
-        public void setNameList(List<String> nameList) {
-            this.nameList = nameList;
-        }
-
-        public String getStartTime() {
-            return startTime;
-        }
-
-        public void setStartTime(String startTime) {
-            this.startTime = startTime;
-        }
-    }
 }
