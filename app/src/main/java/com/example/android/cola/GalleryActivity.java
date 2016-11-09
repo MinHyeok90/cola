@@ -129,6 +129,9 @@ public class GalleryActivity extends AppCompatActivity {
 
     //0이면 지워져야 하므로
     private int partyCount = -1;
+
+    //EmptyGallery 이미지
+    ImageView iv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -213,6 +216,8 @@ public class GalleryActivity extends AppCompatActivity {
 
             }
         });
+        iv = (ImageView)findViewById(R.id.emptyGallery);
+
         /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -244,6 +249,13 @@ public class GalleryActivity extends AppCompatActivity {
                         albumList.add(new GalleryImage(child.getKey(),fileUri, fileName));
                         //filenameList.add(fileName);
                     }
+                }
+                if(albumList.size() == 0)
+                {
+                    iv.setVisibility(View.VISIBLE);
+                }else
+                {
+                    iv.setVisibility(View.GONE);
                 }
                 gridAdapter.notifyDataSetChanged();
 

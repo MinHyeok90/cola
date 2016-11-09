@@ -235,7 +235,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
                     mGridAdapter.notifyDataSetChanged();
 
-                    ImageView lv = (ImageView)findViewById(R.id.imageview3);
+                    ImageView lv = (ImageView)findViewById(R.id.emptyAlbums);
                     //512 415
 
                     //만일 속한 그룹이 하나도 없다면
