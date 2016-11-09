@@ -68,9 +68,10 @@
         <activity android:name=".BluetoothTestActivity" />
         <activity
             android:name=".IntroActivity"
-            android:screenOrientation="portrait"
             android:label="Intro with background"
-            android:theme="@style/FullTheme"></activity>
+            android:screenOrientation="portrait"
+            android:theme="@style/FullTheme" />
+
         <service
             android:name=".BluetoothService"
             android:enabled="true"
@@ -78,7 +79,9 @@
         <service
             android:name=".FindNearbyFriendsService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".MakeAndInviteActivity"></activity>
     </application>
 
 </manifest>
