@@ -432,6 +432,7 @@ public class ImagePickActivity extends AppCompatActivity {
                 // NavUtils.navigateUpFromSameTask(this);
                 finish();
                 return true;
+
             /* 갤러리에서 선택 */
             case R.id.action_select_gallery:
                 Intent i = new Intent(Intent.ACTION_PICK);
@@ -442,6 +443,7 @@ public class ImagePickActivity extends AppCompatActivity {
                 // 결과를 리턴하는 Activity 호출
                 startActivityForResult(i, REQ_CODE_PICK_PICTURE);
                 return true;
+
             default:
                 return true;
 
