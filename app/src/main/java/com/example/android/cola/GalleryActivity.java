@@ -92,7 +92,6 @@ public class GalleryActivity extends AppCompatActivity {
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("albumtest");
-    DatabaseReference mAlbumRef = null;
     public FirebaseStorage storage = FirebaseStorage.getInstance();
     StorageReference storageRef = storage.getReferenceFromUrl("gs://cola-b6336.appspot.com");
     StorageReference imagesRef;
@@ -138,7 +137,6 @@ public class GalleryActivity extends AppCompatActivity {
         mStartDate = intent.getStringExtra("albumDate"); //이것도 인텐트에서 날짜 받아오는게..
         mAlbumOwner = intent.getStringExtra("albumOwner"); //이것도 인텐트에서 날짜 받아오는게..
 
-        mAlbumRef = myRef.child(mAlbumKey);
         DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
 
         // ActionBar에 타이틀 변경
@@ -163,11 +161,13 @@ public class GalleryActivity extends AppCompatActivity {
         });
 
         //썸네일 정보를 읽기위한 리스너.
-        mAlbumRef.addValueEventListener(new ValueEventListener() {
+        myRef.child(mAlbumKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                if(mThumbnail!=null)
-                    mThumbnail = dataSnapshot.child("thumbnail").getValue().toString();
+                //썸네일 정보를 읽음. 앨범을 삭제할 경우, 썸네일이 null로 반환되므로 null인지 확인 후 toString()수행.
+                Object thumb = dataSnapshot.child("thumbnail").getValue();
+                if(thumb != null)
+                    mThumbnail = thumb.toString();
             }
 
             @Override
@@ -410,7 +410,7 @@ public class GalleryActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialogInterface, int i) {
                         /* 변경 시작 */
                         mAlbumName = input.getText().toString();
-                        mAlbumRef.child("name").setValue(mAlbumName);
+                        myRef.child(mAlbumKey).child("name").setValue(mAlbumName);
 
                         // ActionBar에 타이틀 변경
                         getSupportActionBar().setTitle(mAlbumName);
@@ -599,11 +599,11 @@ public class GalleryActivity extends AppCompatActivity {
                             r.child("url").setValue(downloadUrl.toString());
                             r.child("filename").setValue(filename);
                             r.child("owner").setValue(mUser.getUid());
-                            //앨범의 썸네일이 지정되어있지 않다면(=첫 이미지 삽입이리면) 썸네일을 최초것으로 변경한다.
-                            if(mThumbnail!=null)
-                                if(mThumbnail.equals("DEFALUT")){
-                                    mAlbumRef.child("thumbnail").setValue(downloadUrl.toString());
-                                }
+
+                            //앨범 썸네일 값이 DEFALUT라면(=앨범에 처음으로 이미지를 추가하는 경우라면) 썸네일을 최초 추가된 이미지로 변경한다.
+                            if("DEFALUT".equals(mThumbnail)){   //mThumbnail이 null일 경우에 대한 방어코드.
+                                myRef.child(mAlbumKey).child("thumbnail").setValue(downloadUrl.toString());
+                            }
 
                             albumList.add(downloadUrl.toString());
                             gridAdapter.notifyDataSetChanged();
