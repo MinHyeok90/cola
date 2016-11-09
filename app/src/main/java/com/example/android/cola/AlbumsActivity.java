@@ -1,12 +1,20 @@
 package com.example.android.cola;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.drm.DrmManagerClient;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.support.annotation.NonNull;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,10 +23,12 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -41,6 +51,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static android.R.id.input;
+import static com.google.android.gms.internal.zzaoj.bld;
 
 /*
  * Created by 김민혁 on 2016-09-15
@@ -87,7 +100,11 @@ import java.util.Map;
  *
  * Modified by 김민혁 on 2016-11-08
  *  처음으로 앨범 생성 시, 임시 파일을 넣지 말고 아직 이미지 없음을 출력.
- *  no image는 내부 drawable에 있는 no_picture를 사용하도록 수정
+ *  no image는 내부 drawable에 있는 no_picture를 사용하도록 수정.
+ *
+ * Modified by 김민혁 on 2016-11-10
+ *  앨범추가시 글자입력 디테일작업.
+ *  글자 0개 이상 입력해야 생성가능, 키보드 자동 show, hide. 외 기타작업
  *
  */
 
@@ -101,8 +118,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     public GridView mGridView;
     public GridAdapter mGridAdapter;
     public final String TAG = "AlbumActivity";
-    private Boolean isMine = false;
-    private Button btnrefresh;
 
 
     final List albumKeyList = new ArrayList();
@@ -145,7 +160,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         mGridAdapter = new GridAdapter(getApplicationContext(), R.layout.albums_thumbnail, thumbnailUrls, albumNameList,albumDateList);
         mGridView.setAdapter(mGridAdapter);  // 커스텀 아답타를 GridView 에 적용// GridView 항목의 레이아웃 row.xml
 
-        btnrefresh = (Button)findViewById(R.id.album_btrefresh);
         //앨범 클릭시 동작
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -180,7 +194,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
                     //앨범 참여자 중에 자신이 있는지 비교한 후 add함
                     //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
-                    isMine = false;
 
                     mUser = FirebaseAuth.getInstance().getCurrentUser();
                     for (DataSnapshot child : dataSnapshot.getChildren()) {
@@ -222,14 +235,15 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
                     mGridAdapter.notifyDataSetChanged();
 
-                    GridView gv = (GridView) findViewById(R.id.gridview);
+                    ImageView lv = (ImageView)findViewById(R.id.imageview3);
+                    //512 415
+
                     //만일 속한 그룹이 하나도 없다면
                     if (albumKeyList.size() == 0){
-                        gv.setBackgroundResource(R.drawable.noitems);
-//                        gv.setLayoutParams(new GridView.LayoutParams(, GridView.LayoutParams.WRAP_CONTENT));
+                        lv.setVisibility(View.VISIBLE);
+
                     }else{
-                        gv.setBackgroundResource(0);
-//                        gv.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, GridView.LayoutParams.MATCH_PARENT));
+                        lv.setVisibility(View.GONE);
                     }
                 }
 
@@ -241,17 +255,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         );
     }
 
-
-    public void onClick(View view)
-    {
-        isMine = false;
-        if(view.getId() == R.id.album_btrefresh)
-        {
-            //Log.d(TAG, "동기화버튼 클릭");
-            mUser = FirebaseAuth.getInstance().getCurrentUser();
-            //getAlbumList();
-        }
-    }
 
     @Override
     protected void onStart() {
@@ -270,8 +273,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                         //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
                         //앨범 참여자 중에 자신이 있는지 비교한 후 add함
                         //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
-                        isMine = false;
-
                         mUser = FirebaseAuth.getInstance().getCurrentUser();
                         for (DataSnapshot child : dataSnapshot.getChildren()) {
                             albumParty = "";
@@ -345,35 +346,69 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             case R.id.action_add_album:
                 mUser = FirebaseAuth.getInstance().getCurrentUser();
                 /* 추가 버튼 클릭시, 대화상자 출력 */
+                /* 자동으로 키보드 띄우기 */
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
                 AlertDialog.Builder bld = new AlertDialog.Builder(this);
                 bld.setTitle("새 앨범 추가");
                 final EditText input = new EditText(this);
                 input.setHint("새로운 앨범 제목을 작성해주세요.");
-//                bld.setView(R.layout.dialog_new_album_layout);    //다른 layout을 사용하는 경우, 해당 xml에 들어있는 EditText의 Text를 읽어오지 못해서 일단 EditText를 코드로 삽입.
+                input.setText("새로운 앨범");    //글자 수 제한이 걸려있지만 초기값이 빈칸이면 활성화상태임. 빈 입력 막기위한 선 입력조치.
+                input.setSelection(0,input.getText().length());     //먼저 입력된 글자 한번에 지울 수 있도록 전체 선택상태.
                 bld.setView(input);
                 bld.setIcon(R.drawable.imoticon1);
                 bld.setPositiveButton("생성",new DialogInterface.OnClickListener(){
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        /* 저장 시작 */
-                        Long date = new Date().getTime();
-                        // newAlbum 매개변수 : String created_at, Map<String, Object> filelist, String isRecording, String name, String owner, String thumbnail
-                        Album newAlbum = new Album(date.toString(), null, "True", input.getText().toString(), mUser.getUid(), null);
-                        DatabaseReference r = mRef.push();
-                        r.setValue(newAlbum);
-                        r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
+                        /* 자동으로 키보드 숨기기 */
+                        InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(input.getWindowToken(), 0);
 
-                        //생성된 GalleryActivity로 연결
-                        Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
-                        intent.putExtra("albumKey",r.getKey().toString());
-                        intent.putExtra("albumName",input.getText().toString());
-                        intent.putExtra("albumDate",date.toString());
-                        intent.putExtra("albumOwner",mUser.getUid());
-                        startActivity(intent);
+                        Long date = new Date().getTime();
+                        //입력된 글자 0개 이상만 저장
+                        /* 저장 시작 */
+                        if(input.getText().toString().length()>0){
+                            // newAlbum 매개변수 : String created_at, Map<String, Object> filelist, String isRecording, String name, String owner, String thumbnail
+                            Album newAlbum = new Album(date.toString(), null, "True", input.getText().toString(), mUser.getUid(), null);
+                            DatabaseReference r = mRef.push();
+                            r.setValue(newAlbum);
+                            r.child("participants").child(mUser.getUid()).setValue(mUser.getEmail());
+
+                            //생성된 GalleryActivity로 연결
+                            Intent intent = new Intent(AlbumsActivity.this, GalleryActivity.class);
+                            intent.putExtra("albumKey",r.getKey().toString());
+                            intent.putExtra("albumName",input.getText().toString());
+                            intent.putExtra("albumDate",date.toString());
+                            intent.putExtra("albumOwner",mUser.getUid());
+                            startActivity(intent);
+                        }
                     }
                 });
                 bld.setNegativeButton("취소",null);
-                bld.show();
+                final AlertDialog dialog = bld.create();
+                dialog.show();
+
+                /* 한 글자 이상 입력해야 생성 가능하도록 리스너 구현 */
+                input.addTextChangedListener(new TextWatcher() {
+                    @Override
+                    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    }
+
+                    @Override
+                    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    }
+
+                    @Override
+                    public void afterTextChanged(Editable editable) {
+                        //0개 이상의 글자만 true
+                        if (editable.length() > 0){
+                            dialog.getButton(Dialog.BUTTON_POSITIVE).setEnabled(true);
+                        }else{
+                            dialog.getButton(Dialog.BUTTON_POSITIVE).setEnabled(false);
+                        }
+                    }
+                });
 
                 return true;
 
@@ -481,7 +516,12 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             if (view==null)
                 view = layoutInflater.inflate(layout, null);
             // Put it in the image view
-
+//            Boolean isItem = true;
+//            if(thumnailList.size() == 0)
+//            {
+//                isItem = false;
+//            }
+            //final ImageView imageView =(ImageView) view.findViewById(R.drawable.noitems);
             final ImageView imageView = (ImageView) view.findViewById(R.id.albumThumbnailImage);
             final long MAX_BYTE = 1024;
 
