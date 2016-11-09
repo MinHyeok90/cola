@@ -8,6 +8,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -41,7 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.example.android.cola.R.id.gridview;
 /*
  * Created by 김민혁 on 2016-09-15
  *  앨범집 activity.
@@ -161,10 +161,6 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
         });
 
         getAlbumList();
-        if (albumKeyList.size() == 0){
-            GridView gv = (GridView) findViewById(R.id.gridview);
-//            gv.setBackground();
-        }
     }
 //class OnValueEventHandler implements ValueEventListener {
 //
@@ -287,6 +283,16 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                     }
 
                     mGridAdapter.notifyDataSetChanged();
+
+                    GridView gv = (GridView) findViewById(R.id.gridview);
+                    //만일 속한 그룹이 하나도 없다면
+                    if (albumKeyList.size() == 0){
+                        gv.setBackgroundResource(R.drawable.noitems);
+//                        gv.setLayoutParams(new GridView.LayoutParams(, GridView.LayoutParams.WRAP_CONTENT));
+                    }else{
+                        gv.setBackgroundResource(0);
+//                        gv.setLayoutParams(new GridView.LayoutParams(GridView.LayoutParams.MATCH_PARENT, GridView.LayoutParams.MATCH_PARENT));
+                    }
                 }
 
                 @Override
