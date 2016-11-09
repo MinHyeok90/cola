@@ -51,11 +51,10 @@ public class MakeAndInviteActivity extends AppCompatActivity {
         mRef = FirebaseDatabase.getInstance().getReference("albumtest");
 
         // ActionBar에 타이틀 변경
-        getSupportActionBar().setTitle("앨범앨범");
+        getSupportActionBar().setTitle("앨범 만들기");
         Intent intent = getIntent();
 
         final List<Group> groups = intent.getParcelableArrayListExtra("groups");
-
 
         final List<String> emailList = new ArrayList<>();
 
@@ -133,11 +132,11 @@ public class MakeAndInviteActivity extends AppCompatActivity {
             final List<String> emailList = items.get(position).getNameList();
             final Long startTime = Long.parseLong(items.get(position).getStartTime());
             final Date date = new Date(startTime);
-            viewHolder.tvTitle.setText(date.toString()+"부터 찍은 사진");
+            final SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분");
+            viewHolder.tvTitle.setText(sdfNow.format(date)+"부터 찍은 사진");
             viewHolder.btnCreate.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    SimpleDateFormat sdfNow = new SimpleDateFormat("yyyy년 MM월 dd일 HH시 mm분");
 
                     final String dateString = sdfNow.format(date);
                     Album newAlbum = new Album(String.valueOf(startTime), null, "True", dateString+"부터 찍은 사진", mUser.getUid(), null);
@@ -163,22 +162,34 @@ public class MakeAndInviteActivity extends AppCompatActivity {
                 User user = mEmailKeyMap.get(emailList.get(i));
                 if (user != null) {
 
+                    View v = LayoutInflater.from(convertView.getContext()).inflate(R.layout.layout_member_profile_item_sm, null);
+                    ImageView imageView = (ImageView)v.findViewById(R.id.ivPic);
+                    TextView textView = (TextView)v.findViewById(R.id.tv00);
+
                     LinearLayout ll = (LinearLayout) convertView.findViewById(R.id.rec_linearLayout);
 
-                    ImageView imageView = new ImageView(convertView.getContext());
-                    LinearLayout.LayoutParams imageViewLayoutParams = new LinearLayout.LayoutParams(80,80);
-                    imageView.setLayoutParams(imageViewLayoutParams);
+                    /*LinearLayout linearLayout = new LinearLayout(convertView.getContext());
+                    linearLayout.setOrientation(LinearLayout.VERTICAL);
+*/
 
-                    TextView textView = new TextView(convertView.getContext());
+                   /* LinearLayout.LayoutParams imageViewLayoutParams = new LinearLayout.LayoutParams(80,80);
+                    imageView.setLayoutParams(imageViewLayoutParams);*/
+
+                    /*TextView textView = new TextView(convertView.getContext());
 
 
+
+*/
                     Glide.with(convertView.getContext())
                             .load(user.getmPhotoUrl())
                             .into(imageView);
                     textView.setText(user.getmUserName());
+                    ll.addView(v);
 
-                    ll.addView(textView);
-                    ll.addView(imageView);
+                    /*linearLayout.addView(imageView);
+                    linearLayout.addView(textView);
+
+                    ll.addView(linearLayout);*/
 
                 }
 
