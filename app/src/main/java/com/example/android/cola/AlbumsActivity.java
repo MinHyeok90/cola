@@ -130,11 +130,12 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     private String albumParty;
     private String ownUid;
 
-    private OnValueEventHandler mHandler = null;
+    //private OnValueEventHandler mHandler = null;
+    private Iterable<DataSnapshot> snapshots = null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mHandler = new OnValueEventHandler();
+        //mHandler = new OnValueEventHandler();
        //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         setContentView(R.layout.activity_albums);
         Intent it = getIntent();
@@ -170,133 +171,137 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 startActivity(intent);
             }
         });
-
-        mRef.addValueEventListener(mHandler);
-        //getAlbumList();
+        //mRef.addValueEventListener(mHandler);
+        getAlbumList();
     }
-class OnValueEventHandler implements ValueEventListener{
-
-    @Override
-    public void onDataChange(DataSnapshot dataSnapshot) {
-        albumKeyList.clear();
-        albumNameList.clear();
-        albumDateList.clear();
-        thumbnailUrls.clear();
-        albumOwnerList.clear();
-        //FireBase의 앨범 추가
-        //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
-        //앨범 참여자 중에 자신이 있는지 비교한 후 add함
-        //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
-        isMine = false;
-
-        mUser = FirebaseAuth.getInstance().getCurrentUser();
-        for (DataSnapshot child : dataSnapshot.getChildren()) {
-            albumParty = "";
-            if (child != null) {
-                albumKey = child.getKey().toString();
-                albumName = child.child("name").getValue().toString();
-                albumDate = child.child("created_at").getValue().toString();
-                albumImgUrl = child.child("thumbnail").getValue().toString();
-                albumOwner = child.child("owner").getValue().toString();
-
-                if(mUser==null){ownUid= "";}
-                else{
-                    ownUid = mUser.getUid();
-                    albumParty = "";
-                    if (child.child("participants").child(mUser.getUid()).getValue() != null){
-                        albumParty = child.child("participants").child(ownUid).getValue().toString();
-                        //Log.w(TAG,"key : "+albumParty);
-                    }
-                    if (child.child("participants").child(mUser.getUid()).getKey() != null) {
-                        //Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
-                        if (albumParty.equals(mUser.getEmail().toString())) {
-                            //Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
-                            //Log.w(TAG, "key : " + albumParty);
-                            albumKeyList.add(albumKey);
-                            albumNameList.add(albumName);
-                            albumDateList.add(albumDate);
-                            thumbnailUrls.add(albumImgUrl);
-                            albumOwnerList.add(albumOwner);
-                            //Log.w(TAG, "albumName : " + albumName);
-                        }
-                    }
-                }
-
-            }
-        }
-
-        mGridAdapter.notifyDataSetChanged();
-    }
-
-    @Override
-    public void onCancelled(DatabaseError databaseError) {
-
-    }
-}
-//    public void getAlbumList()
-//    {
-//        //앨범 list 가져오기
-//        mRef.addValueEventListener(
-//            new ValueEventListener() {
-//                @Override
-//                public void onDataChange(DataSnapshot dataSnapshot) {
-//                    albumKeyList.clear();
-//                    albumNameList.clear();
-//                    albumDateList.clear();
-//                    thumbnailUrls.clear();
-//                    albumOwnerList.clear();
-//                    //FireBase의 앨범 추가
-//                    //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
-//                    //앨범 참여자 중에 자신이 있는지 비교한 후 add함
-//                    //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
-//                    isMine = false;
+//class OnValueEventHandler implements ValueEventListener {
 //
-//                    mUser = FirebaseAuth.getInstance().getCurrentUser();
-//                    for (DataSnapshot child : dataSnapshot.getChildren()) {
-//                        albumParty = "";
-//                        if (child != null) {
-//                            albumKey = child.getKey().toString();
-//                            albumName = child.child("name").getValue().toString();
-//                            albumDate = child.child("created_at").getValue().toString();
-//                            albumImgUrl = child.child("thumbnail").getValue().toString();
-//                            albumOwner = child.child("owner").getValue().toString();
+////    public void onMyDataChange(DatabaseReference mdata)
+////    {
+////        onDataChange(DataSnapshot );
+////    }
+//    @Override
+//    public void onDataChange(DataSnapshot dataSnapshot) {
+//        snapshots = dataSnapshot.getChildren();
+//        albumKeyList.clear();
+//        albumNameList.clear();
+//        albumDateList.clear();
+//        thumbnailUrls.clear();
+//        albumOwnerList.clear();
+//        //FireBase의 앨범 추가
+//        //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
+//        //앨범 참여자 중에 자신이 있는지 비교한 후 add함
+//        //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
+//        isMine = false;
 //
-//                            if(mUser==null){ownUid= "";}
-//                            else{
-//                                ownUid = mUser.getUid();
-//                                albumParty = "";
-//                                if (child.child("participants").child(mUser.getUid()).getValue() != null){
-//                                    albumParty = child.child("participants").child(ownUid).getValue().toString();
-//                                    //Log.w(TAG,"key : "+albumParty);
-//                                }
-//                                if (child.child("participants").child(mUser.getUid()).getKey() != null) {
-//                                    //Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
-//                                    if (albumParty.equals(mUser.getEmail().toString())) {
-//                                        //Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
-//                                        //Log.w(TAG, "key : " + albumParty);
-//                                        albumKeyList.add(albumKey);
-//                                        albumNameList.add(albumName);
-//                                        albumDateList.add(albumDate);
-//                                        thumbnailUrls.add(albumImgUrl);
-//                                        albumOwnerList.add(albumOwner);
-//                                        //Log.w(TAG, "albumName : " + albumName);
-//                                    }
-//                                }
-//                            }
+//        mUser = FirebaseAuth.getInstance().getCurrentUser();
+//        for (DataSnapshot child : dataSnapshot.getChildren()) {
+//            albumParty = "";
+//            if (child != null) {
+//                albumKey = child.getKey().toString();
+//                albumName = child.child("name").getValue().toString();
+//                albumDate = child.child("created_at").getValue().toString();
+//                albumImgUrl = child.child("thumbnail").getValue().toString();
+//                albumOwner = child.child("owner").getValue().toString();
 //
+//                if(mUser==null){ownUid= "";}
+//                else{
+//                    ownUid = mUser.getUid();
+//                    albumParty = "";
+//                    if (child.child("participants").child(mUser.getUid()).getValue() != null){
+//                        albumParty = child.child("participants").child(ownUid).getValue().toString();
+//                        //Log.w(TAG,"key : "+albumParty);
+//                    }
+//                    if (child.child("participants").child(mUser.getUid()).getKey() != null) {
+//                        //Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
+//                        if (albumParty.equals(mUser.getEmail().toString())) {
+//                            //Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
+//                            //Log.w(TAG, "key : " + albumParty);
+//                            albumKeyList.add(albumKey);
+//                            albumNameList.add(albumName);
+//                            albumDateList.add(albumDate);
+//                            thumbnailUrls.add(albumImgUrl);
+//                            albumOwnerList.add(albumOwner);
+//                            //Log.w(TAG, "albumName : " + albumName);
 //                        }
 //                    }
-//
-//                    mGridAdapter.notifyDataSetChanged();
 //                }
 //
-//                @Override
-//                public void onCancelled(DatabaseError databaseError) {
-//                    Log.w(TAG,"mRef.addValueEventListener: onCancelled");
-//                }
 //            }
-//        );
+//        }
+//
+//        mGridAdapter.notifyDataSetChanged();
 //    }
+//
+//    @Override
+//    public void onCancelled(DatabaseError databaseError) {
+//
+//    }
+//}
+    public void getAlbumList()
+    {
+        //앨범 list 가져오기
+        mRef.addValueEventListener(
+            new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    albumKeyList.clear();
+                    albumNameList.clear();
+                    albumDateList.clear();
+                    thumbnailUrls.clear();
+                    albumOwnerList.clear();
+                    //FireBase의 앨범 추가
+                    //앨범키 / 이름 / 날짜 / URL 정보를 가져오고
+                    //앨범 참여자 중에 자신이 있는지 비교한 후 add함
+                    //참여자가 아닌 앨범 Owner가 자신이라면 역시 add함
+                    isMine = false;
+
+                    mUser = FirebaseAuth.getInstance().getCurrentUser();
+                    for (DataSnapshot child : dataSnapshot.getChildren()) {
+                        albumParty = "";
+                        if (child != null) {
+                            albumKey = child.getKey().toString();
+                            albumName = child.child("name").getValue().toString();
+                            albumDate = child.child("created_at").getValue().toString();
+                            albumImgUrl = child.child("thumbnail").getValue().toString();
+                            albumOwner = child.child("owner").getValue().toString();
+
+                            if(mUser==null){ownUid= "";}
+                            else{
+                                ownUid = mUser.getUid();
+                                albumParty = "";
+                                if (child.child("participants").child(mUser.getUid()).getValue() != null){
+                                    albumParty = child.child("participants").child(ownUid).getValue().toString();
+                                    //Log.w(TAG,"key : "+albumParty);
+                                }
+                                if (child.child("participants").child(mUser.getUid()).getKey() != null) {
+                                    //Log.w(TAG, "keyChild : " + child.child("participants").child(mUser.getUid()).getKey().toString());
+                                    if (albumParty.equals(mUser.getEmail().toString())) {
+                                        //Log.w(TAG, "keyUid : " + mUser.getEmail().toString());
+                                        //Log.w(TAG, "key : " + albumParty);
+                                        albumKeyList.add(albumKey);
+                                        albumNameList.add(albumName);
+                                        albumDateList.add(albumDate);
+                                        thumbnailUrls.add(albumImgUrl);
+                                        albumOwnerList.add(albumOwner);
+                                        //Log.w(TAG, "albumName : " + albumName);
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+                    mGridAdapter.notifyDataSetChanged();
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    Log.w(TAG,"mRef.addValueEventListener: onCancelled");
+                }
+            }
+        );
+    }
 
     public void onClick(View view)
     {
