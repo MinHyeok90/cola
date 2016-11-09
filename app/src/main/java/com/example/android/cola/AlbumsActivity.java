@@ -114,7 +114,8 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     FirebaseDatabase mDatabase;
     DatabaseReference mRef;  //DB에서 Albumtest 명칭 변경시, 변경 필요
     FirebaseUser mUser;
-
+    private FirebaseAuth mAuth;
+    private FirebaseAuth.AuthStateListener mAuthListener;
     public GridView mGridView;
     public GridAdapter mGridAdapter;
     public final String TAG = "AlbumActivity";
@@ -141,6 +142,22 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mAuth = FirebaseAuth.getInstance();
+        mAuthListener = new FirebaseAuth.AuthStateListener(){
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+
+                mUser = firebaseAuth.getCurrentUser();
+                if (mUser != null) {
+                    // User is signed in
+                    Log.d(TAG, "onAuthStateChanged:signed_in:" + mUser.getUid());
+                    getAlbumList();
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                }
+            }
+        };
         //mHandler = new OnValueEventHandler();
        //getSupportActionBar().setDisplayHomeAsUpEnabled(false);
         setContentView(R.layout.activity_albums);
@@ -153,6 +170,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             Log.d(TAG, "mUser : null"+mUser.getEmail());
 
         }
+
         mDatabase = FirebaseDatabase.getInstance();
         mRef = mDatabase.getReference("albumtest");
 
@@ -235,7 +253,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
 
                     mGridAdapter.notifyDataSetChanged();
 
-                    ImageView lv = (ImageView)findViewById(R.id.imageview3);
+                    ImageView lv = (ImageView)findViewById(R.id.emptyAlbums);
                     //512 415
 
                     //만일 속한 그룹이 하나도 없다면
@@ -253,6 +271,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
                 }
             }
         );
+
     }
 
 
@@ -260,6 +279,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     protected void onStart() {
         super.onStart();
         //앨범 list 가져오기
+        mAuth.addAuthStateListener(mAuthListener);
         mRef.addValueEventListener(
                 new ValueEventListener() {
                     @Override
@@ -327,6 +347,7 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
     @Override
     protected void onResume() {
         super.onResume();
+        getAlbumList();
         mGridAdapter.notifyDataSetChanged();
     }
 
@@ -422,6 +443,10 @@ public class AlbumsActivity extends BaseActivity implements GoogleApiClient.OnCo
             case R.id.action_bluetoothTest:
                 Intent intent = new Intent(AlbumsActivity.this, BluetoothTestActivity.class);
                 startActivity(intent);
+                return true;
+            case android.R.id.home:
+                // NavUtils.navigateUpFromSameTask(this);
+                finish();
                 return true;
 
             default:

@@ -75,6 +75,7 @@ public class AddNewMemberActivity extends BaseActivity{
         }
 
         mUserArray.clear();
+        mPartyUser.clear();
         //initFriend();
         //mDatabase.keepSynced(false);
     }
@@ -82,14 +83,18 @@ public class AddNewMemberActivity extends BaseActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        //initFriend();
+        mUserArray.clear();
+        mPartyUser.clear();
+        initFriend();
         mAdapter.notifyDataSetChanged();
     }
     @Override
     protected void onStart() {
         super.onStart();
-        initFriend();
-        mAdapter.notifyDataSetChanged();
+//        mUserArray.clear();
+//        mPartyUser.clear();
+//        initFriend();
+//        mAdapter.notifyDataSetChanged();
     }
     public void initFriend()
     {

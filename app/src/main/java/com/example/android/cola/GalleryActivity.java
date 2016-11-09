@@ -31,6 +31,7 @@ import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -129,6 +130,9 @@ public class GalleryActivity extends AppCompatActivity {
 
     //0이면 지워져야 하므로
     private int partyCount = -1;
+
+    //EmptyGallery 이미지
+    ImageView iv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,8 +148,8 @@ public class GalleryActivity extends AppCompatActivity {
 
         DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
 
-        if(!mSelectMode){
-            LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+        if (!mSelectMode) {
+            LinearLayout linearLayout = (LinearLayout) findViewById(R.id.selectedmenu);
             linearLayout.setVisibility(View.GONE);
         }
 
@@ -162,11 +166,10 @@ public class GalleryActivity extends AppCompatActivity {
         mGridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(mSelectMode){
+                if (mSelectMode) {
                     albumList.get(position).setChecked(!albumList.get(position).isChecked());
                     gridAdapter.notifyDataSetChanged();
-                }
-                else {
+                } else {
                     String uri = albumList.get(position).getUrl();// .toString();
                     Intent intent = new Intent(activity, DetailActivity.class);
 
@@ -175,23 +178,24 @@ public class GalleryActivity extends AppCompatActivity {
                 }
             }
         });
-        mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+        mGridView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                if(!mSelectMode) {
+                if (!mSelectMode) {
                     mSelectMode = true;
-                    LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.selectedmenu);
                     linearLayout.setVisibility(View.VISIBLE);
                     gridAdapter.notifyDataSetChanged();
 
-                }else{
+                } else {
                     mSelectMode = false;
-                    LinearLayout linearLayout = (LinearLayout)findViewById(R.id.selectedmenu);
+                    LinearLayout linearLayout = (LinearLayout) findViewById(R.id.selectedmenu);
                     linearLayout.setVisibility(View.INVISIBLE);
-                    for(GalleryImage i : albumList){
+                    for (GalleryImage i : albumList) {
                         i.setChecked(false);
                     }
                     gridAdapter.notifyDataSetChanged();
+                    return true;
                 }
 
                 return false;
@@ -204,7 +208,7 @@ public class GalleryActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //썸네일 정보를 읽음. 앨범을 삭제할 경우, 썸네일이 null로 반환되므로 null인지 확인 후 toString()수행.
                 Object thumb = dataSnapshot.child("thumbnail").getValue();
-                if(thumb != null)
+                if (thumb != null)
                     mThumbnail = thumb.toString();
             }
 
@@ -213,6 +217,7 @@ public class GalleryActivity extends AppCompatActivity {
 
             }
         });
+
         /*myRef.child(albumKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -231,7 +236,6 @@ public class GalleryActivity extends AppCompatActivity {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 albumList.clear();
-                //filenameList.clear();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     if (child != null) {
                         //Log.d(TAG, "aaaaaaaaaa aaaaaa aaaaa : "+child.toString());
@@ -241,10 +245,13 @@ public class GalleryActivity extends AppCompatActivity {
                         */
                         String fileUri = child.child("url").getValue().toString();
                         String fileName = child.child("filename").getValue().toString();
-                        albumList.add(new GalleryImage(fileUri, fileName));
+                        albumList.add(new GalleryImage(child.getKey(), fileUri, fileName));
                         //filenameList.add(fileName);
                     }
                 }
+
+                ////emptyGallery 여부
+                imageBool();
                 gridAdapter.notifyDataSetChanged();
 
             }
@@ -254,9 +261,10 @@ public class GalleryActivity extends AppCompatActivity {
                 Log.w(TAG, "getUser:onCancelled", databaseError.toException());
                 // ...
             }
-        } ;
+        };
         mReference.addListenerForSingleValueEvent(valueEventListener);
 
+        iv = (ImageView) findViewById(R.id.emptyGallery);
     }
 
     @Override
@@ -264,85 +272,61 @@ public class GalleryActivity extends AppCompatActivity {
         return super.onSupportNavigateUp();
     }
 
+    /* long click 수정 시 작동할 함수들 */
     void onClick(View v) {
-
         switch (v.getId()) {
+            case R.id.button_select_all:        //전체선택
+                for (int i = 0; i < albumList.size(); i++) {
+                    albumList.get(i).isChecked = true;
+                }
+                gridAdapter.notifyDataSetChanged();
+                break;
 
-            /*case R.id.loadButton:
-                //String albumKey = "1";// 인텐트에서 받아온 앨범 key 값으로 변경할것
-                final DatabaseReference mReference = myRef.child(mAlbumKey).child("filelist");
-                final StorageReference albumReference = storageRef.child(mAlbumKey);
 
-                //최근 파일 불러오기, projection: select할 필드 선택
-                String[] projection = new String[]{
-                        MediaStore.Images.ImageColumns._ID,
-                        MediaStore.Images.ImageColumns.DATA,
-                        MediaStore.Images.ImageColumns.BUCKET_DISPLAY_NAME,
-                        MediaStore.Images.ImageColumns.DATE_TAKEN,
-                        MediaStore.Images.ImageColumns.MIME_TYPE
-                };
-                String where = MediaStore.Images.Media.DATE_TAKEN + " >= " + start;
+            case R.id.button_select_all_false:  //전체선택취소
+                for (int i = 0; i < albumList.size(); i++) {
+                    albumList.get(i).isChecked = false;
+                }
+                imageBool();//emptyGallery 여부
+                gridAdapter.notifyDataSetChanged();
+                break;
+            case R.id.button_remove_selected:   //선택 삭제
 
-                //문제 있음. 외장메모리 없는 경우 External_content_url 작동 안함
-                //Internal_conent_uri로 실행 시 잘 안 되는 것 같음
-                Cursor cursor = getContentResolver()
-                        .query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, projection, where,
-                                null, MediaStore.Images.ImageColumns.DATE_TAKEN + " DESC");
-                ; //returns cursor with 3 columns mentioned above
-
-                boolean a = cursor.isAfterLast();
-                while (cursor.moveToNext()) {
-                    String filePath = cursor.getString(1);
-                    final String filename = filePath.split("/")[filePath.split("/").length - 1];
-                    if (!filenameList.contains(filename)) {
-                        BitmapFactory.Options options = new BitmapFactory.Options();
-                        options.inSampleSize = 4;
-                        Bitmap src = BitmapFactory.decodeFile(filePath, options);
-                        Bitmap resized = Bitmap.createScaledBitmap(src, 256, 256, true);
-
-                        ByteArrayOutputStream bos = new ByteArrayOutputStream();
-                        resized.compress(Bitmap.CompressFormat.PNG, 0 *//*ignored for PNG*//*, bos);
-                        byte[] bitmapData = bos.toByteArray();
-                        InputStream bs = new ByteArrayInputStream(bitmapData);
-
-                        String dateTaken = cursor.getString(3);
-                        long dTaken = Long.parseLong(dateTaken);
-                        Date date = new Date(dTaken);
-                        StorageReference fileReference = albumReference.child(filename);
-
-                        UploadTask uploadTask = fileReference.putStream(bs);
-
-                        // Register observers to listen for when the download is done or if it fails
-                        uploadTask.addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception exception) {
-                                // Handle unsuccessful uploads
+                /* 대화상자 생성 시작 */
+                AlertDialog.Builder bld;
+                bld = new AlertDialog.Builder(this);
+                bld.setTitle("정말로 삭제하시겠습니까?");
+                bld.setPositiveButton("삭제", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int j) {
+                        /* 삭제 시작 */
+                        for (int i = 0; i < albumList.size(); i++) {
+                            if (albumList.get(i).isChecked()) {
+                                myRef.child(mAlbumKey).child("filelist").child(albumList.get(i).getKey()).removeValue();
+                                albumList.remove(i);
+                                i--;
                             }
-                        }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                // taskSnapshot.getMetadata() contains file metadata such as size, content-type, and download URL.
-                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                                DatabaseReference r = mReference.push();
-                                String filename = taskSnapshot.getMetadata().getName();
-                                r.child("url").setValue(downloadUrl.toString());
-                                r.child("filename").setValue(filename);
+                        }
+                        imageBool();//emptyGallery 여부
+                        gridAdapter.notifyDataSetChanged();
+                    }
+                });
+                bld.setNegativeButton("취소", null);
+                bld.show();
+                break;
 
-                            }
-                        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-                            @Override
-                            public void onProgress(UploadTask.TaskSnapshot taskSnapshot) {
-                                TextView progressView = (TextView) findViewById(R.id.progress);
-                                double progress = 100.0 * (taskSnapshot.getBytesTransferred() / taskSnapshot.getTotalByteCount());
-                                System.out.println("Upload is " + progress + "% done");
-                                progressView.setText("uploading: " + progress + "%");
-                            }
-                        });
+            case R.id.button_make_thumnail:     //해당 사진을 썸내일로
+                for (int i = 0; i < albumList.size(); i++) {
+                    if (albumList.get(i).isChecked()) {
+                        myRef.child(mAlbumKey).child("thumbnail").setValue(albumList.get(i).getUrl());
+                        break;
                     }
                 }
-                break;*/
+                gridAdapter.notifyDataSetChanged();
+                break;
         }
     }
+
 
     public class GridAdapter extends BaseAdapter {
         Context context;
@@ -577,6 +561,9 @@ public class GalleryActivity extends AppCompatActivity {
                 Intent intent2 = new Intent(this, ImagePickActivity.class);
                 intent2.putExtra("startDate", mStartDate);
                 startActivityForResult(intent2, REQ_CODE_PICK_PICTURE);
+
+                gridAdapter.notifyDataSetChanged();
+                //imageBool();//emptyGallery여부
                 /*Intent i = new Intent(Intent.ACTION_PICK);
                 i.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
                 i.setType(android.provider.MediaStore.Images.Media.CONTENT_TYPE);
@@ -586,11 +573,23 @@ public class GalleryActivity extends AppCompatActivity {
                 startActivityForResult(i, REQ_CODE_PICK_PICTURE);
 */
                 return true;
-
+            case android.R.id.home:
+                // NavUtils.navigateUpFromSameTask(this);
+                finish();
+                return true;
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.
                 return super.onOptionsItemSelected(item);
+        }
+    }
+    //이미지가 보여질 것인지 말 것인지 보여줌
+    public void imageBool()
+    {
+        if (albumList.size() == 0) {
+            iv.setVisibility(View.VISIBLE);
+        } else {
+            iv.setVisibility(View.GONE);
         }
     }
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -667,7 +666,8 @@ public class GalleryActivity extends AppCompatActivity {
                                 myRef.child(mAlbumKey).child("thumbnail").setValue(downloadUrl.toString());
                             }
 
-                            albumList.add(new GalleryImage(downloadUrl.toString(), filename));
+                            albumList.add(new GalleryImage(r.getKey(), downloadUrl.toString(), filename));
+                            imageBool();
                             gridAdapter.notifyDataSetChanged();
                         }
                     }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
@@ -686,11 +686,13 @@ public class GalleryActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
     }
     class GalleryImage{
+        public String key;
         public String url;
         public String filename;
         public boolean isChecked;
 
-        public GalleryImage(String url, String filename) {
+        public GalleryImage(String key, String url, String filename) {
+            this.key = key;
             this.url = url;
             this.filename = filename;
             this.isChecked = false;
@@ -699,6 +701,14 @@ public class GalleryActivity extends AppCompatActivity {
             this.url = url;
             this.filename = filename;
             this.isChecked = isChecked;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public void setKey(String key) {
+            this.key = key;
         }
 
         public String getUrl() {
