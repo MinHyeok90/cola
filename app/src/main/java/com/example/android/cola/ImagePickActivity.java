@@ -432,7 +432,7 @@ public class ImagePickActivity extends AppCompatActivity {
                 // NavUtils.navigateUpFromSameTask(this);
                 finish();
                 return true;
-            
+
             default:
                 return true;
 

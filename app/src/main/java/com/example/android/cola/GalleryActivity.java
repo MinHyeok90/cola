@@ -166,7 +166,8 @@ public class GalleryActivity extends AppCompatActivity {
         mAlbumRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                mThumbnail = dataSnapshot.child("thumbnail").getValue().toString();
+                if(mThumbnail!=null)
+                    mThumbnail = dataSnapshot.child("thumbnail").getValue().toString();
             }
 
             @Override
@@ -596,9 +597,10 @@ public class GalleryActivity extends AppCompatActivity {
                             r.child("filename").setValue(filename);
                             r.child("owner").setValue(mUser.getUid());
                             //앨범의 썸네일이 지정되어있지 않다면(=첫 이미지 삽입이리면) 썸네일을 최초것으로 변경한다.
-                            if(mThumbnail.equals("DEFALUT")){
-                                mAlbumRef.child("thumbnail").setValue(downloadUrl.toString());
-                            }
+                            if(mThumbnail!=null)
+                                if(mThumbnail.equals("DEFALUT")){
+                                    mAlbumRef.child("thumbnail").setValue(downloadUrl.toString());
+                                }
 
                             albumList.add(downloadUrl.toString());
                             gridAdapter.notifyDataSetChanged();
